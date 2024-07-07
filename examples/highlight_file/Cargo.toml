@@ -1,0 +1,13 @@
+[package]
+name = "highlight_file"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ratatui = { version = "0.27.0" }
+
+[target.'cfg(unix)'.dependencies]
+ratatui-syntax = { path = "../../ratatui-syntax" }
+
+[target.'cfg(not(unix))'.dependencies]
+ratatui-syntax = { path = "../../ratatui-syntax", features = ["regex-fancy"] }

@@ -1,0 +1,3 @@
+[workspace]
+members = ["./ratatui-syntax", "examples/*", "utils/pack-theme"]
+resolver = "2"

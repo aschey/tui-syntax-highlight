@@ -1,0 +1,22 @@
+[package]
+name = "sqlite_custom"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+ratatui-syntax = { path = "../../ratatui-syntax" }
+ratatui = { version = "0.27.0" }
+
+[target.'cfg(unix)'.dependencies]
+ratatui-syntax = { path = "../../ratatui-syntax" }
+
+[target.'cfg(not(unix))'.dependencies]
+ratatui-syntax = { path = "../../ratatui-syntax", features = ["regex-fancy"] }
+
+[build-dependencies]
+syntect = { version = "5.2.0", default-features = false, features = [
+    "yaml-load",
+    "plist-load",
+    "regex-fancy",
+] }

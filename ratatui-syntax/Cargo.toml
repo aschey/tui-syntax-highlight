@@ -1,0 +1,21 @@
+[package]
+name = "ratatui-syntax"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ratatui = { version = "0.27.0", default-features = false }
+syntect = { version = "5", default-features = false, features = ["parsing"] }
+
+[dev-dependencies]
+ratatui = { version = "0.27.0" }
+
+[features]
+default-syntaxes = ["syntect/default-syntaxes"]
+default-themes = ["syntect/default-themes"]
+regex-fancy = ["syntect/regex-fancy"]
+regex-onig = ["syntect/regex-onig"]
+yaml-load = ["syntect/yaml-load"]
+plist-load = ["syntect/plist-load"]
+default = ["regex-onig", "default-syntaxes", "default-themes", "ansi-theme"]
+ansi-theme = []
