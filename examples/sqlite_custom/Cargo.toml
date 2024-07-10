@@ -5,14 +5,13 @@ edition = "2021"
 publish = false
 
 [dependencies]
-ratatui-syntax = { path = "../../ratatui-syntax" }
 ratatui = { version = "0.27.0" }
 
 [target.'cfg(unix)'.dependencies]
-ratatui-syntax = { path = "../../ratatui-syntax" }
+ratatui-syntax = { path = "../.." }
 
 [target.'cfg(not(unix))'.dependencies]
-ratatui-syntax = { path = "../../ratatui-syntax", features = ["regex-fancy"] }
+ratatui-syntax = { path = "../..", features = ["regex-fancy"] }
 
 [build-dependencies]
 syntect = { version = "5.2.0", default-features = false, features = [

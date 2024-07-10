@@ -1,3 +1,33 @@
+[package]
+name = "ratatui-syntax"
+version = "0.1.0"
+edition = "2021"
+
 [workspace]
-members = ["./ratatui-syntax", "examples/*", "utils/pack-theme"]
 resolver = "2"
+members = ["./examples/sqlite_custom"]
+
+[dependencies]
+delegate = "0.12.0"
+once_cell = "1.19.0"
+ratatui = { version = "0.27.0", default-features = false }
+syntect = { version = "5", default-features = false, features = ["parsing"] }
+syntect-assets = { version = "0.23.6", optional = true, default-features = false }
+
+[dev-dependencies]
+ratatui = { version = "0.27.0" }
+
+[features]
+default-syntaxes = ["syntect/default-syntaxes"]
+default-themes = ["syntect/default-themes"]
+regex-fancy = ["syntect/regex-fancy", "syntect-assets?/regex-fancy"]
+regex-onig = ["syntect/regex-onig", "syntect-assets?/regex-onig"]
+yaml-load = ["syntect/yaml-load"]
+plist-load = ["syntect/plist-load"]
+metadata = ["syntect/metadata"]
+bat-assets = ["syntect-assets"]
+default = ["regex-onig", "default-syntaxes", "default-themes", "metadata"]
+
+[[example]]
+name = "highlight_file"
+required-features = ["bat-assets"]
