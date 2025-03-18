@@ -1,13 +1,15 @@
 use std::error::Error;
-use std::io::{stdout, Stdout};
+use std::io::{Stdout, stdout};
 use std::time::Duration;
 
 use ratatui::backend::CrosstermBackend;
 use ratatui::crossterm::execute;
 use ratatui::crossterm::terminal::{
-    disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen,
+    EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode,
 };
-use ratatui_syntax::{find_syntax_by_name, load_syntaxes, load_themes, CodeBlock, CodeHighlighter};
+use tui_syntax_highlight::{
+    CodeBlock, CodeHighlighter, find_syntax_by_name, load_syntaxes, load_themes,
+};
 
 type Terminal = ratatui::Terminal<CrosstermBackend<Stdout>>;
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
@@ -25,7 +27,7 @@ fn main() -> Result<()> {
     );
     let block = CodeBlock::new(highlight);
 
-    terminal.draw(|frame| frame.render_widget(block, frame.size()))?;
+    terminal.draw(|frame| frame.render_widget(block, frame.area()))?;
     std::thread::sleep(Duration::from_secs(3));
     restore_terminal(terminal)?;
     Ok(())

@@ -1,9 +1,9 @@
+use std::cell::LazyCell;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
 use std::sync::{Arc, OnceLock, RwLock};
 
-use once_cell::unsync::Lazy;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::style::{Color, Style, Stylize};
@@ -17,7 +17,8 @@ static SYNTAXES: OnceLock<Arc<RwLock<SyntaxSet>>> = OnceLock::new();
 static THEMES: OnceLock<RwLock<ThemeSet>> = OnceLock::new();
 #[cfg(feature = "bat-assets")]
 thread_local! {
-    static EXTRA_ASSETS: Lazy<syntect_assets::assets::HighlightingAssets> = Lazy::new(syntect_assets::assets::HighlightingAssets::from_binary);
+    static EXTRA_ASSETS: LazyCell<syntect_assets::assets::HighlightingAssets> =
+        LazyCell::new(syntect_assets::assets::HighlightingAssets::from_binary);
 }
 
 #[macro_export]
@@ -419,13 +420,11 @@ impl CodeHighlighter {
         line_number_style: Style,
     ) -> Line<'static> {
         let mut spans = self.get_initial_spans(line_number, line_number_style);
-        // let mut lines = vec![];
         for &(ref style, mut text) in v.iter() {
             let ends_with_newline = text.ends_with('\n');
             if ends_with_newline {
                 text = &text[..text.len() - 1];
             }
-            // let text = text.to_string();
 
             let tui_style = self.syntect_style_to_tui(style);
 
@@ -493,7 +492,7 @@ fn ansi_color_to_tui(value: u8) -> ratatui::style::Color {
         0x0D => ratatui::style::Color::LightMagenta,
         0x0E => ratatui::style::Color::LightCyan,
         0x0F => ratatui::style::Color::White,
-        _ => ratatui::style::Color::White,
+        _ => ratatui::style::Color::Gray,
     }
 }
 
@@ -530,7 +529,7 @@ impl<'a> CodeBlock<'a> {
     }
 }
 
-impl<'a> Widget for CodeBlock<'a> {
+impl Widget for CodeBlock<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         self.inner.render(area, buf)
     }
