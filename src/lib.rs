@@ -15,7 +15,7 @@ use syntect::parsing::{SyntaxDefinition, SyntaxReference, SyntaxSet};
 
 static SYNTAXES: OnceLock<Arc<RwLock<SyntaxSet>>> = OnceLock::new();
 static THEMES: OnceLock<RwLock<ThemeSet>> = OnceLock::new();
-#[cfg(feature = "bat-assets")]
+#[cfg(feature = "syntect-assets")]
 thread_local! {
     static EXTRA_ASSETS: LazyCell<syntect_assets::assets::HighlightingAssets> =
         LazyCell::new(syntect_assets::assets::HighlightingAssets::from_binary);
@@ -73,7 +73,7 @@ pub fn add_syntax(syntax: SyntaxDefinition) {
 }
 
 pub fn find_syntax_by_name(name: &str) -> (SyntaxReference, SyntaxSet) {
-    #[cfg(feature = "bat-assets")]
+    #[cfg(feature = "syntect-assets")]
     {
         if let (Some(syntax), syntaxes) = EXTRA_ASSETS.with(|a| {
             let syntaxes = a.get_syntax_set().unwrap();
@@ -93,7 +93,7 @@ pub fn find_syntax_by_name(name: &str) -> (SyntaxReference, SyntaxSet) {
 }
 
 pub fn find_syntax_for_file(path: impl AsRef<Path>) -> (SyntaxReference, SyntaxSet) {
-    #[cfg(feature = "bat-assets")]
+    #[cfg(feature = "syntect-assets")]
     {
         if let (Some(syntax), syntaxes) = EXTRA_ASSETS.with(|a| {
             let syntaxes = a.get_syntax_set().unwrap();
@@ -117,7 +117,7 @@ pub fn find_syntax_for_file(path: impl AsRef<Path>) -> (SyntaxReference, SyntaxS
 }
 
 pub fn find_syntax_by_extension(extension: &str) -> (SyntaxReference, SyntaxSet) {
-    #[cfg(feature = "bat-assets")]
+    #[cfg(feature = "syntect-assets")]
     {
         if let (Some(syntax), syntaxes) = EXTRA_ASSETS.with(|a| {
             let syntaxes = a.get_syntax_set().unwrap();
@@ -140,7 +140,7 @@ pub fn find_syntax_by_extension(extension: &str) -> (SyntaxReference, SyntaxSet)
 }
 
 pub fn find_syntax_by_first_line(line: &str) -> (SyntaxReference, SyntaxSet) {
-    #[cfg(feature = "bat-assets")]
+    #[cfg(feature = "syntect-assets")]
     {
         if let (Some(syntax), syntaxes) = EXTRA_ASSETS.with(|a| {
             let syntaxes = a.get_syntax_set().unwrap();
@@ -196,7 +196,7 @@ impl IntoLines for &str {
 }
 
 fn load_theme(theme: &str) -> Theme {
-    #[cfg(feature = "bat-assets")]
+    #[cfg(feature = "syntect-assets")]
     {
         if let Some(theme) = EXTRA_ASSETS.with(|a| {
             if a.themes().any(|t| t == theme) {
@@ -381,13 +381,11 @@ impl CodeHighlighter {
         line_number_style: Style,
     ) -> Line<'static> {
         let mut spans = self.get_initial_spans(line_number, line_number_style);
-        // let mut lines = vec![];
         for &(ref style, mut text) in v.iter() {
             let ends_with_newline = text.ends_with('\n');
             if ends_with_newline {
                 text = &text[..text.len() - 1];
             }
-            // let text = text.to_string();
 
             let fg = if style.foreground.a == 0 {
                 ansi_color_to_tui(style.foreground.r)
@@ -406,9 +404,6 @@ impl CodeHighlighter {
             }
             tui_style = tui_style.add_modifier(syntect_modifiers_to_tui(&style.font_style));
             spans.push(Span::styled(text.to_string(), tui_style));
-            // if ends_with_newline {
-            //     lines.push(Line::from_iter(spans.drain(..)));
-            // }
         }
         Line::from_iter(spans)
     }

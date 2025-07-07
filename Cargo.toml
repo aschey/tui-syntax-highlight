@@ -23,9 +23,9 @@ regex-onig = ["syntect/regex-onig", "syntect-assets?/regex-onig"]
 yaml-load = ["syntect/yaml-load"]
 plist-load = ["syntect/plist-load"]
 metadata = ["syntect/metadata"]
-bat-assets = ["syntect-assets"]
+syntect-assets = ["dep:syntect-assets"]
 default = ["regex-onig", "default-syntaxes", "default-themes", "metadata"]
 
 [[example]]
 name = "highlight_file"
-required-features = ["bat-assets"]
+required-features = ["syntect-assets"]
