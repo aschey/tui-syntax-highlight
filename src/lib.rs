@@ -1,7 +1,5 @@
-use std::fs::File;
-use std::io::{BufRead, BufReader};
+use std::io::{self, BufRead, BufReader};
 use std::ops::{Deref, DerefMut};
-use std::path::Path;
 
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
@@ -125,13 +123,11 @@ impl CodeHighlighter {
         self
     }
 
-    pub fn highlight_file(
-        &self,
-        path: impl AsRef<Path>,
-        syntax: &SyntaxReference,
-    ) -> HighlightedText {
-        let file = File::open(path).unwrap();
-        let mut reader = BufReader::new(file);
+    pub fn highlight_reader<R>(&self, reader: R, syntax: &SyntaxReference) -> HighlightedText
+    where
+        R: io::Read,
+    {
+        let mut reader = BufReader::new(reader);
         let mut highlighter = HighlightLines::new(syntax, &self.theme);
         let line_number_style = self.get_line_number_style(&mut highlighter, &self.syntaxes);
         let mut line = String::new();

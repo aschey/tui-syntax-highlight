@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::fs::File;
 use std::io::{Stdout, stdout};
 
 use ratatui::backend::CrosstermBackend;
@@ -21,7 +22,10 @@ fn main() -> Result<()> {
     let themes = ThemeSet::load_defaults();
     let highlighter = CodeHighlighter::new(themes.themes["base16-ocean.dark"].clone(), syntaxes);
     let syntax = highlighter.syntaxes().find_syntax_by_name("SQL").unwrap();
-    let highlight = highlighter.highlight_file("./examples/sqlite_custom/build.rs", syntax);
+    let highlight = highlighter.highlight_reader(
+        File::open("./examples/sqlite_custom/build.rs").unwrap(),
+        syntax,
+    );
     terminal.draw(|frame| {
         frame.render_widget(
             highlight.into_paragraph().block(Block::bordered()),
