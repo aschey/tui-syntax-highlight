@@ -10,22 +10,15 @@ members = ["./examples/sqlite_custom"]
 [dependencies]
 ratatui = { version = "0.29.0", default-features = false }
 syntect = { version = "5", default-features = false, features = ["parsing"] }
-syntect-assets = { version = "0.23.6", optional = true, default-features = false }
+
+[features]
+regex-fancy = ["syntect/regex-fancy"]
+regex-onig = ["syntect/regex-onig"]
+default = ["regex-onig"]
 
 [dev-dependencies]
 ratatui = { version = "0.29.0" }
-
-[features]
-default-syntaxes = ["syntect/default-syntaxes"]
-default-themes = ["syntect/default-themes"]
-regex-fancy = ["syntect/regex-fancy", "syntect-assets?/regex-fancy"]
-regex-onig = ["syntect/regex-onig", "syntect-assets?/regex-onig"]
-yaml-load = ["syntect/yaml-load"]
-plist-load = ["syntect/plist-load"]
-metadata = ["syntect/metadata"]
-syntect-assets = ["dep:syntect-assets"]
-default = ["regex-onig", "default-syntaxes", "default-themes", "metadata"]
-
-[[example]]
-name = "highlight_file"
-required-features = ["syntect-assets"]
+syntect = { version = "5", default-features = false, features = [
+  "default-syntaxes",
+  "default-themes",
+] }

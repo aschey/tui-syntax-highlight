@@ -1,171 +1,17 @@
-use std::cell::LazyCell;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::ops::{Deref, DerefMut};
 use std::path::Path;
-use std::sync::{Arc, OnceLock, RwLock};
 
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::style::{Color, Style, Stylize};
 use ratatui::text::{Line, Span, Text};
-use ratatui::widgets::{Block, Paragraph, Widget, Wrap};
+use ratatui::widgets::{Paragraph, Widget};
+pub use syntect;
 use syntect::easy::HighlightLines;
-use syntect::highlighting::{Theme, ThemeSet};
-use syntect::parsing::{SyntaxDefinition, SyntaxReference, SyntaxSet};
-
-static SYNTAXES: OnceLock<Arc<RwLock<SyntaxSet>>> = OnceLock::new();
-static THEMES: OnceLock<RwLock<ThemeSet>> = OnceLock::new();
-#[cfg(feature = "syntect-assets")]
-thread_local! {
-    static EXTRA_ASSETS: LazyCell<syntect_assets::assets::HighlightingAssets> =
-        LazyCell::new(syntect_assets::assets::HighlightingAssets::from_binary);
-}
-
-#[macro_export]
-macro_rules! load_syntaxes {
-    ($file:expr $(,)?) => {
-        $crate::load_syntaxes_from_binary(include_bytes!($file))
-    };
-}
-
-#[macro_export]
-macro_rules! load_themes {
-    ($file:expr $(,)?) => {
-        $crate::load_themes_from_binary(include_bytes!($file))
-    };
-}
-
-pub fn load_syntaxes_from_binary(data: &[u8]) {
-    SYNTAXES
-        .set(Arc::new(RwLock::new(
-            syntect::dumps::from_uncompressed_data(data).expect("failed to load syntaxes"),
-        )))
-        .unwrap();
-}
-
-pub fn load_themes_from_binary(data: &[u8]) {
-    THEMES.set(syntect::dumps::from_binary(data)).unwrap();
-}
-
-#[cfg(feature = "default-syntaxes")]
-pub fn load_default_syntaxes() {
-    SYNTAXES
-        .set(Arc::new(RwLock::new(SyntaxSet::load_defaults_newlines())))
-        .unwrap();
-}
-
-#[cfg(feature = "default-themes")]
-pub fn load_default_themes() {
-    THEMES.set(RwLock::new(ThemeSet::load_defaults())).unwrap();
-}
-
-#[cfg(feature = "plist-load")]
-pub fn add_theme_from_folder(path: impl AsRef<Path>) {
-    let mut themes = THEMES.get().unwrap().write().unwrap();
-    themes.add_from_folder(path).unwrap();
-}
-
-pub fn add_syntax(syntax: SyntaxDefinition) {
-    let mut syntaxes = SYNTAXES.get().unwrap().write().unwrap();
-    let mut builder = syntaxes.clone().into_builder();
-    builder.add(syntax);
-    *syntaxes = builder.build();
-}
-
-pub fn find_syntax_by_name(name: &str) -> (SyntaxReference, SyntaxSet) {
-    #[cfg(feature = "syntect-assets")]
-    {
-        if let (Some(syntax), syntaxes) = EXTRA_ASSETS.with(|a| {
-            let syntaxes = a.get_syntax_set().unwrap();
-            (
-                syntaxes.find_syntax_by_name(name).cloned(),
-                syntaxes.clone(),
-            )
-        }) {
-            return (syntax, syntaxes);
-        }
-    }
-    let syntaxes = SYNTAXES.get().unwrap().read().unwrap();
-    (
-        syntaxes.find_syntax_by_name(name).unwrap().clone(),
-        syntaxes.clone(),
-    )
-}
-
-pub fn find_syntax_for_file(path: impl AsRef<Path>) -> (SyntaxReference, SyntaxSet) {
-    #[cfg(feature = "syntect-assets")]
-    {
-        if let (Some(syntax), syntaxes) = EXTRA_ASSETS.with(|a| {
-            let syntaxes = a.get_syntax_set().unwrap();
-            (
-                syntaxes.find_syntax_for_file(&path).unwrap().cloned(),
-                syntaxes.clone(),
-            )
-        }) {
-            return (syntax, syntaxes);
-        }
-    }
-    let syntaxes = SYNTAXES.get().unwrap().read().unwrap();
-    (
-        syntaxes
-            .find_syntax_for_file(path)
-            .unwrap()
-            .unwrap()
-            .clone(),
-        syntaxes.clone(),
-    )
-}
-
-pub fn find_syntax_by_extension(extension: &str) -> (SyntaxReference, SyntaxSet) {
-    #[cfg(feature = "syntect-assets")]
-    {
-        if let (Some(syntax), syntaxes) = EXTRA_ASSETS.with(|a| {
-            let syntaxes = a.get_syntax_set().unwrap();
-            (
-                syntaxes.find_syntax_by_extension(extension).cloned(),
-                syntaxes.clone(),
-            )
-        }) {
-            return (syntax, syntaxes);
-        }
-    }
-    let syntaxes = SYNTAXES.get().unwrap().read().unwrap();
-    (
-        syntaxes
-            .find_syntax_by_extension(extension)
-            .unwrap()
-            .clone(),
-        syntaxes.clone(),
-    )
-}
-
-pub fn find_syntax_by_first_line(line: &str) -> (SyntaxReference, SyntaxSet) {
-    #[cfg(feature = "syntect-assets")]
-    {
-        if let (Some(syntax), syntaxes) = EXTRA_ASSETS.with(|a| {
-            let syntaxes = a.get_syntax_set().unwrap();
-            (
-                syntaxes.find_syntax_by_first_line(line).cloned(),
-                syntaxes.clone(),
-            )
-        }) {
-            return (syntax, syntaxes);
-        }
-    }
-    let syntaxes = SYNTAXES.get().unwrap().read().unwrap();
-    (
-        syntaxes.find_syntax_by_first_line(line).unwrap().clone(),
-        syntaxes.clone(),
-    )
-}
-
-#[cfg(feature = "yaml-load")]
-pub fn add_syntax_from_folder(path: impl AsRef<Path>) {
-    let mut syntaxes = SYNTAXES.get().unwrap().write().unwrap();
-    let mut builder = syntaxes.clone().into_builder();
-    builder.add_from_folder(path, true).unwrap();
-    *syntaxes = builder.build();
-}
+use syntect::highlighting::Theme;
+use syntect::parsing::{SyntaxReference, SyntaxSet};
 
 pub trait IntoLines {
     fn into_lines(self) -> Vec<String>;
@@ -195,56 +41,78 @@ impl IntoLines for &str {
     }
 }
 
-fn load_theme(theme: &str) -> Theme {
-    #[cfg(feature = "syntect-assets")]
-    {
-        if let Some(theme) = EXTRA_ASSETS.with(|a| {
-            if a.themes().any(|t| t == theme) {
-                Some(a.get_theme(theme).clone())
-            } else {
-                None
-            }
-        }) {
-            return theme.clone();
-        }
-    }
-
-    THEMES.get().unwrap().read().unwrap().themes[theme].clone()
-}
-
 #[derive(Clone, Copy)]
 pub enum OverrideBackground {
     Empty,
     Color(ratatui::style::Color),
 }
 
-pub struct CodeHighlighter {
-    theme: Theme,
-    is_ansi_theme: bool,
-    override_background: Option<OverrideBackground>,
-    include_line_numbers: bool,
-    line_number_padding: usize,
-    line_number_separator: String,
+pub struct HighlightedText<'a>(pub Text<'a>);
+
+impl<'a> HighlightedText<'a> {
+    pub fn into_paragraph(self) -> Paragraph<'a> {
+        let bg = self.0.style.bg;
+        let paragraph = Paragraph::new(self.0);
+        if let Some(bg) = bg {
+            paragraph.bg(bg)
+        } else {
+            paragraph
+        }
+    }
 }
 
-pub struct HighlightedText<'a> {
-    pub text: Text<'a>,
-    pub background: Option<Color>,
+impl<'a> Deref for HighlightedText<'a> {
+    type Target = Text<'a>;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for HighlightedText<'_> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl Widget for HighlightedText<'_> {
+    fn render(self, area: Rect, buf: &mut Buffer)
+    where
+        Self: Sized,
+    {
+        self.0.render(area, buf);
+    }
+}
+
+pub struct CodeHighlighter {
+    theme: Theme,
+    override_background: Option<OverrideBackground>,
+    line_numbers: bool,
+    line_number_padding: usize,
+    line_number_separator: String,
+    syntaxes: SyntaxSet,
+    is_ansi_theme: bool,
 }
 
 impl CodeHighlighter {
-    pub fn new(theme: &str) -> Self {
-        let theme_obj = load_theme(theme);
-
+    pub fn new(theme: Theme, syntaxes: SyntaxSet) -> Self {
+        let is_ansi_theme = theme
+            .name
+            .as_deref()
+            .unwrap_or_default()
+            .eq_ignore_ascii_case("ansi");
         Self {
-            theme: theme_obj,
-            is_ansi_theme: theme == "ansi",
+            theme,
             override_background: None,
-            include_line_numbers: true,
+            line_numbers: true,
             line_number_padding: 4,
             line_number_separator: "│".to_string(),
-            // line_number_style: Style::new().dim(),
+            syntaxes,
+            is_ansi_theme,
         }
+    }
+
+    pub fn syntaxes(&self) -> &SyntaxSet {
+        &self.syntaxes
     }
 
     pub fn override_background(mut self, background: OverrideBackground) -> Self {
@@ -252,12 +120,20 @@ impl CodeHighlighter {
         self
     }
 
-    pub fn highlight_file(&self, path: impl AsRef<Path>) -> HighlightedText {
-        let (syntax, syntaxes) = find_syntax_for_file(&path);
+    pub fn line_numbers(mut self, line_numbers: bool) -> Self {
+        self.line_numbers = line_numbers;
+        self
+    }
+
+    pub fn highlight_file(
+        &self,
+        path: impl AsRef<Path>,
+        syntax: &SyntaxReference,
+    ) -> HighlightedText {
         let file = File::open(path).unwrap();
         let mut reader = BufReader::new(file);
-        let mut highlighter = HighlightLines::new(&syntax, &self.theme);
-        let line_number_style = self.get_line_number_style(&mut highlighter, &syntaxes);
+        let mut highlighter = HighlightLines::new(syntax, &self.theme);
+        let line_number_style = self.get_line_number_style(&mut highlighter, &self.syntaxes);
         let mut line = String::new();
         let mut formatted = Vec::new();
         let mut i = 1;
@@ -268,49 +144,52 @@ impl CodeHighlighter {
                     &mut highlighter,
                     i,
                     line_number_style,
-                    &syntaxes,
+                    &self.syntaxes,
                 )
                 .unwrap();
             formatted.push(highlighted);
             line.clear();
             i += 1;
         }
-        HighlightedText {
-            text: Text::from_iter(formatted),
-            background: line_number_style.bg,
-        }
+        self.to_text(Text::from_iter(formatted), line_number_style.bg)
     }
 
     pub fn highlight_lines(
         &self,
         source: impl IntoLines,
-        syntax: Option<(SyntaxReference, SyntaxSet)>,
+        syntax: &SyntaxReference,
     ) -> HighlightedText {
         let lines = source.into_lines();
         if lines.is_empty() {
-            return HighlightedText {
-                text: Text::raw(""),
-                background: None,
-            };
+            return HighlightedText(Text::raw(""));
         }
 
-        let (syntax, syntaxes) = match syntax {
-            Some(syntax) => syntax,
-            None => find_syntax_by_first_line(&lines[0]),
-        };
-        let mut highlighter = HighlightLines::new(&syntax, &self.theme);
-        let line_number_style = self.get_line_number_style(&mut highlighter, &syntaxes);
+        let mut highlighter = HighlightLines::new(syntax, &self.theme);
+        let line_number_style = self.get_line_number_style(&mut highlighter, &self.syntaxes);
         let formatted = lines
             .into_iter()
             .enumerate()
             .map(|(i, line)| {
-                self.highlight_line(line, &mut highlighter, i + 1, line_number_style, &syntaxes)
+                self.highlight_line(
+                    line,
+                    &mut highlighter,
+                    i + 1,
+                    line_number_style,
+                    &self.syntaxes,
+                )
             })
             .collect::<Result<Vec<_>, syntect::Error>>();
-        HighlightedText {
-            text: Text::from_iter(formatted.unwrap()),
-            background: line_number_style.bg,
+        self.to_text(Text::from_iter(formatted.unwrap()), line_number_style.bg)
+    }
+
+    fn to_text<'a>(&self, text: Text<'a>, bg: Option<Color>) -> HighlightedText<'a> {
+        if let Some(OverrideBackground::Color(color)) = self.override_background {
+            return HighlightedText(text.bg(color));
+        };
+        if let Some(bg) = bg {
+            return HighlightedText(text.bg(bg));
         }
+        HighlightedText(text)
     }
 
     fn highlight_line(
@@ -359,7 +238,7 @@ impl CodeHighlighter {
         line_number: usize,
         line_number_style: Style,
     ) -> Vec<Span<'static>> {
-        if self.include_line_numbers {
+        if self.line_numbers {
             vec![
                 Span::from(format!(
                     "{line_number:^width$}{} ",
@@ -488,44 +367,5 @@ fn ansi_color_to_tui(value: u8) -> ratatui::style::Color {
         0x0E => ratatui::style::Color::LightCyan,
         0x0F => ratatui::style::Color::White,
         _ => ratatui::style::Color::Gray,
-    }
-}
-
-pub struct CodeBlock<'a> {
-    inner: Paragraph<'a>,
-}
-
-type Vertical = u16;
-type Horizontal = u16;
-
-impl<'a> CodeBlock<'a> {
-    pub fn new(highlighted: HighlightedText<'a>) -> Self {
-        let mut paragraph = Paragraph::new(highlighted.text);
-        if let Some(bg) = highlighted.background {
-            paragraph = paragraph.bg(bg);
-        }
-
-        Self { inner: paragraph }
-    }
-
-    pub fn block(mut self, block: Block<'a>) -> Self {
-        self.inner = self.inner.block(block);
-        self
-    }
-
-    pub fn scroll(mut self, offset: (Vertical, Horizontal)) -> Self {
-        self.inner = self.inner.scroll(offset);
-        self
-    }
-
-    pub fn wrap(mut self, wrap: Wrap) -> Self {
-        self.inner = self.inner.wrap(wrap);
-        self
-    }
-}
-
-impl Widget for CodeBlock<'_> {
-    fn render(self, area: Rect, buf: &mut Buffer) {
-        self.inner.render(area, buf)
     }
 }

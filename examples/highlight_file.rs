@@ -1,32 +1,34 @@
 use std::error::Error;
 use std::io::{Stdout, stdout};
-use std::time::Duration;
 
 use ratatui::backend::CrosstermBackend;
+use ratatui::crossterm::event::read;
 use ratatui::crossterm::execute;
 use ratatui::crossterm::terminal::{
     EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode,
 };
 use ratatui::widgets::Block;
-use tui_syntax_highlight::{
-    CodeBlock, CodeHighlighter, load_default_syntaxes, load_default_themes,
-};
+use syntect::highlighting::ThemeSet;
+use syntect::parsing::SyntaxSet;
+use tui_syntax_highlight::CodeHighlighter;
 
 type Terminal = ratatui::Terminal<CrosstermBackend<Stdout>>;
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
 fn main() -> Result<()> {
-    load_default_syntaxes();
-    load_default_themes();
-
     let mut terminal = setup_terminal()?;
-
-    let highlighter = CodeHighlighter::new("OneHalfDark");
-    let highlight = highlighter.highlight_file("./examples/sqlite_custom/build.rs");
-    let block = CodeBlock::new(highlight).block(Block::bordered());
-
-    terminal.draw(|frame| frame.render_widget(block, frame.area()))?;
-    std::thread::sleep(Duration::from_secs(3));
+    let syntaxes = SyntaxSet::load_defaults_newlines();
+    let themes = ThemeSet::load_defaults();
+    let highlighter = CodeHighlighter::new(themes.themes["base16-ocean.dark"].clone(), syntaxes);
+    let syntax = highlighter.syntaxes().find_syntax_by_name("SQL").unwrap();
+    let highlight = highlighter.highlight_file("./examples/sqlite_custom/build.rs", syntax);
+    terminal.draw(|frame| {
+        frame.render_widget(
+            highlight.into_paragraph().block(Block::bordered()),
+            frame.area(),
+        )
+    })?;
+    read()?;
     restore_terminal(terminal)?;
     Ok(())
 }

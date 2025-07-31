@@ -6,12 +6,12 @@ publish = false
 
 [dependencies]
 ratatui = { version = "0.29.0" }
-
-[target.'cfg(unix)'.dependencies]
+syntect = { version = "5.2.0", default-features = false, features = [
+  "yaml-load",
+  "plist-load",
+] }
 tui-syntax-highlight = { path = "../.." }
 
-[target.'cfg(not(unix))'.dependencies]
-tui-syntax-highlight = { path = "../..", features = ["regex-fancy"] }
 
 [build-dependencies]
 syntect = { version = "5.2.0", default-features = false, features = [
