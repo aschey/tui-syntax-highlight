@@ -16,9 +16,10 @@ type Terminal = ratatui::Terminal<CrosstermBackend<Stdout>>;
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
 fn main() -> Result<()> {
-    let syntaxes: SyntaxSet =
-        dumps::from_uncompressed_data(include_bytes!("../dumps/sqlite.packdump")).unwrap();
-    let themes: ThemeSet = dumps::from_binary(include_bytes!("../dumps/themes.themedump"));
+    let syntax_bin = include_bytes!(concat!(env!("OUT_DIR"), "/sqlite.packdump"));
+    let theme_bin = include_bytes!(concat!(env!("OUT_DIR"), "/themes.themedump"));
+    let syntaxes: SyntaxSet = dumps::from_uncompressed_data(syntax_bin).unwrap();
+    let themes: ThemeSet = dumps::from_binary(theme_bin);
 
     let mut terminal = setup_terminal()?;
 
