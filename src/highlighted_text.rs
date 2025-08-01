@@ -1,4 +1,3 @@
-
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::style::{Style, Stylize};
@@ -12,6 +11,11 @@ impl<'a> HighlightedText<'a> {
     pub fn into_text(self) -> Text<'a> {
         self.0
     }
+
+    pub fn text(&self) -> &Text<'a> {
+        &self.0
+    }
+
     pub fn into_paragraph(self) -> Paragraph<'a> {
         let bg = self.0.style.bg;
         let paragraph = Paragraph::new(self.0);

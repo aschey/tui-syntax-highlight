@@ -28,7 +28,7 @@ fn main() -> Result<()> {
         "select a,b,c from table;\nselect b,c,d from table2;",
         syntaxes.find_syntax_by_name("SQL").unwrap(),
         &syntaxes,
-    );
+    )?;
 
     terminal.draw(|frame| frame.render_widget(highlight, frame.area()))?;
     read()?;

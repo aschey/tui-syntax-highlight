@@ -5,6 +5,7 @@ use std::sync::LazyLock;
 use ratatui::Terminal;
 use ratatui::backend::TestBackend;
 use ratatui::style::Color;
+use ratatui::text::Span;
 use ratatui::widgets::Widget;
 use syntect::highlighting::ThemeSet;
 use syntect::parsing::SyntaxSet;
@@ -30,11 +31,13 @@ macro_rules! assert_snapshot {
 #[test]
 fn highlighter() {
     let highlighter = Highlighter::new(THEMES.themes["base16-ocean.dark"].clone());
-    let highlight = highlighter.highlight_lines(
-        "select a,b,c from table;\nselect b,c,d from table2;",
-        SYNTAXES.find_syntax_by_name("SQL").unwrap(),
-        &SYNTAXES,
-    );
+    let highlight = highlighter
+        .highlight_lines(
+            "select a,b,c from table;\nselect b,c,d from table2;",
+            SYNTAXES.find_syntax_by_name("SQL").unwrap(),
+            &SYNTAXES,
+        )
+        .unwrap();
     assert_snapshot!("highlighter", draw(40, 2, highlight));
 }
 
@@ -42,11 +45,13 @@ fn highlighter() {
 fn highlighter_no_line_number() {
     let highlighter =
         Highlighter::new(THEMES.themes["base16-ocean.dark"].clone()).line_numbers(false);
-    let highlight = highlighter.highlight_lines(
-        "select a,b,c from table;\nselect b,c,d from table2;",
-        SYNTAXES.find_syntax_by_name("SQL").unwrap(),
-        &SYNTAXES,
-    );
+    let highlight = highlighter
+        .highlight_lines(
+            "select a,b,c from table;\nselect b,c,d from table2;",
+            SYNTAXES.find_syntax_by_name("SQL").unwrap(),
+            &SYNTAXES,
+        )
+        .unwrap();
     assert_snapshot!("highlighter_no_line_numbers", draw(40, 2, highlight));
 }
 
@@ -54,12 +59,34 @@ fn highlighter_no_line_number() {
 fn highlighter_override_bg() {
     let highlighter = Highlighter::new(THEMES.themes["base16-ocean.dark"].clone())
         .override_background(Color::Reset);
-    let highlight = highlighter.highlight_lines(
-        "select a,b,c from table;\nselect b,c,d from table2;",
-        SYNTAXES.find_syntax_by_name("SQL").unwrap(),
-        &SYNTAXES,
-    );
+    let highlight = highlighter
+        .highlight_lines(
+            "select a,b,c from table;\nselect b,c,d from table2;",
+            SYNTAXES.find_syntax_by_name("SQL").unwrap(),
+            &SYNTAXES,
+        )
+        .unwrap();
     assert_snapshot!("highlighter_override_bg", draw(40, 2, highlight));
+}
+
+#[test]
+fn highlighter_template() {
+    let highlighter =
+        Highlighter::new(THEMES.themes["base16-ocean.dark"].clone()).gutter_template(|n, style| {
+            vec![
+                Span::raw(n.to_string()),
+                Span::raw(" "),
+                Span::styled(">", style),
+            ]
+        });
+    let highlight = highlighter
+        .highlight_lines(
+            "select a,b,c from table;\nselect b,c,d from table2;",
+            SYNTAXES.find_syntax_by_name("SQL").unwrap(),
+            &SYNTAXES,
+        )
+        .unwrap();
+    assert_snapshot!("highlighter_template", draw(40, 2, highlight));
 }
 
 #[test]
@@ -68,11 +95,13 @@ fn highlight_file_ansi() {
     let syntaxes = ASSETS.with(|a| a.get_syntax_set().unwrap().clone());
     let syntax = syntaxes.find_syntax_by_name("Rust").unwrap();
     let highlighter = Highlighter::new(theme);
-    let highlight = highlighter.highlight_reader(
-        File::open("./tests/assets/test_file.rs").unwrap(),
-        syntax,
-        &syntaxes,
-    );
+    let highlight = highlighter
+        .highlight_reader(
+            File::open("./tests/assets/test_file.rs").unwrap(),
+            syntax,
+            &syntaxes,
+        )
+        .unwrap();
     assert_snapshot!("highlight_file_ansi", draw(40, 3, highlight));
 }
 
