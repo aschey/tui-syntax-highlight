@@ -8,10 +8,10 @@ use ratatui::crossterm::execute;
 use ratatui::crossterm::terminal::{
     EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode,
 };
-use ratatui::widgets::Block;
+use ratatui::style::Color;
 use syntect::highlighting::ThemeSet;
 use syntect::parsing::SyntaxSet;
-use tui_syntax_highlight::CodeHighlighter;
+use tui_syntax_highlight::Highlighter;
 
 type Terminal = ratatui::Terminal<CrosstermBackend<Stdout>>;
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
@@ -20,18 +20,14 @@ fn main() -> Result<()> {
     let mut terminal = setup_terminal()?;
     let syntaxes = SyntaxSet::load_defaults_newlines();
     let themes = ThemeSet::load_defaults();
-    let highlighter = CodeHighlighter::new(themes.themes["base16-ocean.dark"].clone(), syntaxes);
+    let highlighter = Highlighter::new(themes.themes["base16-ocean.dark"].clone(), syntaxes)
+        .override_background(Color::Reset);
     let syntax = highlighter.syntaxes().find_syntax_by_name("SQL").unwrap();
     let highlight = highlighter.highlight_reader(
         File::open("./examples/sqlite_custom/build.rs").unwrap(),
         syntax,
     );
-    terminal.draw(|frame| {
-        frame.render_widget(
-            highlight.into_paragraph().block(Block::bordered()),
-            frame.area(),
-        )
-    })?;
+    terminal.draw(|frame| frame.render_widget(highlight, frame.area()))?;
     read()?;
     restore_terminal(terminal)?;
     Ok(())

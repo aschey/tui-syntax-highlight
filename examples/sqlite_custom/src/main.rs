@@ -10,7 +10,7 @@ use ratatui::crossterm::terminal::{
 use syntect::dumps;
 use syntect::highlighting::ThemeSet;
 use syntect::parsing::SyntaxSet;
-use tui_syntax_highlight::CodeHighlighter;
+use tui_syntax_highlight::Highlighter;
 
 type Terminal = ratatui::Terminal<CrosstermBackend<Stdout>>;
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
@@ -24,7 +24,7 @@ fn main() -> Result<()> {
     let mut terminal = setup_terminal()?;
 
     let highlighter =
-        CodeHighlighter::new(themes.themes.get("ansi").unwrap().clone(), syntaxes.clone());
+        Highlighter::new(themes.themes.get("ansi").unwrap().clone(), syntaxes.clone());
     let highlight = highlighter.highlight_lines(
         "select a,b,c from table;\nselect b,c,d from table2;",
         syntaxes.find_syntax_by_name("SQL").unwrap(),
