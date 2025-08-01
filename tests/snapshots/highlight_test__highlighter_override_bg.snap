@@ -1,5 +1,5 @@
 ---
-source: tests/test.rs
+source: tests/highlight_test.rs
 expression: "draw(40, 2, highlight).buffer()"
 ---
 Buffer {

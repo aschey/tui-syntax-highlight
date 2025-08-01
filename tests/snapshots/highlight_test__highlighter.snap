@@ -1,5 +1,5 @@
 ---
-source: tests/test.rs
+source: tests/highlight_test.rs
 expression: "draw(40, 2, highlight).buffer()"
 ---
 Buffer {
@@ -9,24 +9,24 @@ Buffer {
         " 2 │ select b,c,d from table2;          ",
     ],
     styles: [
-        x: 0, y: 0, fg: Reset, bg: Reset, underline: Reset, modifier: NONE,
-        x: 1, y: 0, fg: DarkGray, bg: Reset, underline: Reset, modifier: NONE,
-        x: 2, y: 0, fg: Reset, bg: Reset, underline: Reset, modifier: NONE,
-        x: 3, y: 0, fg: DarkGray, bg: Reset, underline: Reset, modifier: NONE,
-        x: 4, y: 0, fg: Reset, bg: Reset, underline: Reset, modifier: NONE,
+        x: 0, y: 0, fg: Reset, bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
+        x: 1, y: 0, fg: DarkGray, bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
+        x: 2, y: 0, fg: Reset, bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
+        x: 3, y: 0, fg: DarkGray, bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
+        x: 4, y: 0, fg: Reset, bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
         x: 5, y: 0, fg: Rgb(180, 142, 173), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
         x: 11, y: 0, fg: Rgb(192, 197, 206), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
         x: 18, y: 0, fg: Rgb(180, 142, 173), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
         x: 22, y: 0, fg: Rgb(192, 197, 206), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
-        x: 29, y: 0, fg: Reset, bg: Reset, underline: Reset, modifier: NONE,
-        x: 1, y: 1, fg: DarkGray, bg: Reset, underline: Reset, modifier: NONE,
-        x: 2, y: 1, fg: Reset, bg: Reset, underline: Reset, modifier: NONE,
-        x: 3, y: 1, fg: DarkGray, bg: Reset, underline: Reset, modifier: NONE,
-        x: 4, y: 1, fg: Reset, bg: Reset, underline: Reset, modifier: NONE,
+        x: 29, y: 0, fg: Reset, bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
+        x: 1, y: 1, fg: DarkGray, bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
+        x: 2, y: 1, fg: Reset, bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
+        x: 3, y: 1, fg: DarkGray, bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
+        x: 4, y: 1, fg: Reset, bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
         x: 5, y: 1, fg: Rgb(180, 142, 173), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
         x: 11, y: 1, fg: Rgb(192, 197, 206), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
         x: 18, y: 1, fg: Rgb(180, 142, 173), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
         x: 22, y: 1, fg: Rgb(192, 197, 206), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
-        x: 30, y: 1, fg: Reset, bg: Reset, underline: Reset, modifier: NONE,
+        x: 30, y: 1, fg: Reset, bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
     ]
 }

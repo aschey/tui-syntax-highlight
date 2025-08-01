@@ -1,5 +1,5 @@
 ---
-source: tests/test.rs
+source: tests/highlight_test.rs
 expression: "draw(40, 2, highlight).buffer()"
 ---
 Buffer {
@@ -13,11 +13,11 @@ Buffer {
         x: 6, y: 0, fg: Rgb(192, 197, 206), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
         x: 13, y: 0, fg: Rgb(180, 142, 173), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
         x: 17, y: 0, fg: Rgb(192, 197, 206), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
-        x: 24, y: 0, fg: Reset, bg: Reset, underline: Reset, modifier: NONE,
+        x: 24, y: 0, fg: Reset, bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
         x: 0, y: 1, fg: Rgb(180, 142, 173), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
         x: 6, y: 1, fg: Rgb(192, 197, 206), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
         x: 13, y: 1, fg: Rgb(180, 142, 173), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
         x: 17, y: 1, fg: Rgb(192, 197, 206), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
-        x: 25, y: 1, fg: Reset, bg: Reset, underline: Reset, modifier: NONE,
+        x: 25, y: 1, fg: Reset, bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
     ]
 }

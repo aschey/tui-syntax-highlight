@@ -1,5 +1,5 @@
 ---
-source: tests/test.rs
+source: tests/highlight_test.rs
 expression: "draw(40, 2, highlight).buffer()"
 ---
 Buffer {
@@ -9,18 +9,18 @@ Buffer {
         "2 >select b,c,d from table2;            ",
     ],
     styles: [
-        x: 0, y: 0, fg: Reset, bg: Reset, underline: Reset, modifier: NONE,
-        x: 2, y: 0, fg: DarkGray, bg: Reset, underline: Reset, modifier: NONE,
+        x: 0, y: 0, fg: Reset, bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
+        x: 2, y: 0, fg: DarkGray, bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
         x: 3, y: 0, fg: Rgb(180, 142, 173), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
         x: 9, y: 0, fg: Rgb(192, 197, 206), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
         x: 16, y: 0, fg: Rgb(180, 142, 173), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
         x: 20, y: 0, fg: Rgb(192, 197, 206), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
-        x: 27, y: 0, fg: Reset, bg: Reset, underline: Reset, modifier: NONE,
-        x: 2, y: 1, fg: DarkGray, bg: Reset, underline: Reset, modifier: NONE,
+        x: 27, y: 0, fg: Reset, bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
+        x: 2, y: 1, fg: DarkGray, bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
         x: 3, y: 1, fg: Rgb(180, 142, 173), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
         x: 9, y: 1, fg: Rgb(192, 197, 206), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
         x: 16, y: 1, fg: Rgb(180, 142, 173), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
         x: 20, y: 1, fg: Rgb(192, 197, 206), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
-        x: 28, y: 1, fg: Reset, bg: Reset, underline: Reset, modifier: NONE,
+        x: 28, y: 1, fg: Reset, bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
     ]
 }

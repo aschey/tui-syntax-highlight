@@ -1,0 +1,122 @@
+name: CI
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  merge_group:
+
+env:
+  RUST_MIN: "1.88"
+
+jobs:
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Build
+        run: cargo build 
+      - name: Clippy
+        run: cargo clippy --all-features --examples -- -D warnings
+      - name: Build all
+        run: cargo build --all-features --examples
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@cargo-nextest
+      - name: Test
+        run: |
+          cargo test --doc
+          cargo llvm-cov nextest --all-features --codecov --ignore-filename-regex ".cargo|.*_test\.rs" > ./codecov.json
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        with:
+          verbose: true
+          fail_ci_if_error: true
+          files: ./codecov.json
+  release-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Minimal build
+        run: cargo build --release
+      - name: Build all
+        run: cargo build --release --all-features --examples
+
+  min-versions:
+    name: Check min dependency versions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust nightly
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: nightly
+      - uses: Swatinem/rust-cache@v2
+      - name: Install cargo-hack
+        uses: taiki-e/install-action@cargo-hack
+      - name: Install cargo-minimal-versions
+        uses: taiki-e/install-action@cargo-minimal-versions
+      - name: Cargo minimal-versions
+        run: |
+          cargo minimal-versions check
+          cargo minimal-versions check --all-features
+
+  min-rust:
+    name: Check MSRV
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # this interferes with the rust version that gets used
+      - name: remove toolchain
+        run: rm rust-toolchain.toml
+      - name: Install Rust ${{ env.RUST_MIN }}
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ env.RUST_MIN }}
+      - uses: Swatinem/rust-cache@v2
+      - name: Cargo check
+        run: cargo check --all-features
+
+  lint:
+    name: "Lint"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust nightly
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: nightly
+          components: rustfmt
+      - name: Check typos
+        uses: crate-ci/typos@master
+      - name: rustfmt
+        run: cargo +nightly fmt --all --check
+      - name: Verify docs
+        run: cargo +nightly doc -Zunstable-options -Zrustdoc-scrape-examples --no-deps --all-features
+        env:
+          RUSTDOCFLAGS: --cfg docsrs -D warnings
+
+      - name: Lint dependencies
+        uses: EmbarkStudios/cargo-deny-action@v2
+      - name: Security vulnerabilities audit
+        uses: rustsec/audit-check@v2.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
