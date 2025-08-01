@@ -15,12 +15,11 @@ pub struct Highlighter {
     line_numbers: bool,
     line_number_padding: usize,
     line_number_separator: String,
-    syntaxes: SyntaxSet,
     is_ansi_theme: bool,
 }
 
 impl Highlighter {
-    pub fn new(theme: Theme, syntaxes: SyntaxSet) -> Self {
+    pub fn new(theme: Theme) -> Self {
         let is_ansi_theme = theme
             .name
             .as_deref()
@@ -32,13 +31,8 @@ impl Highlighter {
             line_numbers: true,
             line_number_padding: 4,
             line_number_separator: "│".to_string(),
-            syntaxes,
             is_ansi_theme,
         }
-    }
-
-    pub fn syntaxes(&self) -> &SyntaxSet {
-        &self.syntaxes
     }
 
     pub fn override_background<C>(mut self, background: C) -> Self
@@ -54,13 +48,18 @@ impl Highlighter {
         self
     }
 
-    pub fn highlight_reader<R>(&self, reader: R, syntax: &SyntaxReference) -> HighlightedText
+    pub fn highlight_reader<R>(
+        &self,
+        reader: R,
+        syntax: &SyntaxReference,
+        syntaxes: &SyntaxSet,
+    ) -> HighlightedText
     where
         R: io::Read,
     {
         let mut reader = BufReader::new(reader);
         let mut highlighter = HighlightLines::new(syntax, &self.theme);
-        let line_number_style = self.get_line_number_style(&mut highlighter, &self.syntaxes);
+        let line_number_style = self.get_line_number_style(&mut highlighter, syntaxes);
         let mut line = String::new();
         let mut formatted = Vec::new();
         let mut i = 1;
@@ -71,7 +70,7 @@ impl Highlighter {
                     &mut highlighter,
                     i,
                     line_number_style,
-                    &self.syntaxes,
+                    syntaxes,
                 )
                 .unwrap();
             formatted.push(highlighted);
@@ -81,7 +80,12 @@ impl Highlighter {
         self.to_text(Text::from_iter(formatted), line_number_style.bg)
     }
 
-    pub fn highlight_lines<T>(&self, source: T, syntax: &SyntaxReference) -> HighlightedText
+    pub fn highlight_lines<T>(
+        &self,
+        source: T,
+        syntax: &SyntaxReference,
+        syntaxes: &SyntaxSet,
+    ) -> HighlightedText
     where
         T: IntoLines,
     {
@@ -91,18 +95,12 @@ impl Highlighter {
         }
 
         let mut highlighter = HighlightLines::new(syntax, &self.theme);
-        let line_number_style = self.get_line_number_style(&mut highlighter, &self.syntaxes);
+        let line_number_style = self.get_line_number_style(&mut highlighter, syntaxes);
         let formatted = lines
             .into_iter()
             .enumerate()
             .map(|(i, line)| {
-                self.highlight_line(
-                    line,
-                    &mut highlighter,
-                    i + 1,
-                    line_number_style,
-                    &self.syntaxes,
-                )
+                self.highlight_line(line, &mut highlighter, i + 1, line_number_style, syntaxes)
             })
             .collect::<Result<Vec<_>, syntect::Error>>();
         self.to_text(Text::from_iter(formatted.unwrap()), line_number_style.bg)

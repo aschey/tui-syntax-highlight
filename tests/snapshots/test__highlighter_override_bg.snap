@@ -1,0 +1,25 @@
+---
+source: tests/test.rs
+expression: "draw(40, 2, highlight).buffer()"
+---
+Buffer {
+    area: Rect { x: 0, y: 0, width: 40, height: 2 },
+    content: [
+        " 1  │ select a,b,c from table;          ",
+        " 2  │ select b,c,d from table2;         ",
+    ],
+    styles: [
+        x: 0, y: 0, fg: Rgb(192, 206, 197), bg: Reset, underline: Reset, modifier: DIM,
+        x: 6, y: 0, fg: Rgb(180, 173, 142), bg: Reset, underline: Reset, modifier: NONE,
+        x: 12, y: 0, fg: Rgb(192, 206, 197), bg: Reset, underline: Reset, modifier: NONE,
+        x: 19, y: 0, fg: Rgb(180, 173, 142), bg: Reset, underline: Reset, modifier: NONE,
+        x: 23, y: 0, fg: Rgb(192, 206, 197), bg: Reset, underline: Reset, modifier: NONE,
+        x: 30, y: 0, fg: Reset, bg: Reset, underline: Reset, modifier: NONE,
+        x: 0, y: 1, fg: Rgb(192, 206, 197), bg: Reset, underline: Reset, modifier: DIM,
+        x: 6, y: 1, fg: Rgb(180, 173, 142), bg: Reset, underline: Reset, modifier: NONE,
+        x: 12, y: 1, fg: Rgb(192, 206, 197), bg: Reset, underline: Reset, modifier: NONE,
+        x: 19, y: 1, fg: Rgb(180, 173, 142), bg: Reset, underline: Reset, modifier: NONE,
+        x: 23, y: 1, fg: Rgb(192, 206, 197), bg: Reset, underline: Reset, modifier: NONE,
+        x: 31, y: 1, fg: Reset, bg: Reset, underline: Reset, modifier: NONE,
+    ]
+}

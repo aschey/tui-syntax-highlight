@@ -1,0 +1,23 @@
+---
+source: tests/test.rs
+expression: "draw(40, 2, highlight).buffer()"
+---
+Buffer {
+    area: Rect { x: 0, y: 0, width: 40, height: 2 },
+    content: [
+        "select a,b,c from table;                ",
+        "select b,c,d from table2;               ",
+    ],
+    styles: [
+        x: 0, y: 0, fg: Rgb(180, 173, 142), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
+        x: 6, y: 0, fg: Rgb(192, 206, 197), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
+        x: 13, y: 0, fg: Rgb(180, 173, 142), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
+        x: 17, y: 0, fg: Rgb(192, 206, 197), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
+        x: 24, y: 0, fg: Reset, bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
+        x: 0, y: 1, fg: Rgb(180, 173, 142), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
+        x: 6, y: 1, fg: Rgb(192, 206, 197), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
+        x: 13, y: 1, fg: Rgb(180, 173, 142), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
+        x: 17, y: 1, fg: Rgb(192, 206, 197), bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
+        x: 25, y: 1, fg: Reset, bg: Rgb(43, 48, 59), underline: Reset, modifier: NONE,
+    ]
+}

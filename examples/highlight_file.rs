@@ -20,12 +20,13 @@ fn main() -> Result<()> {
     let mut terminal = setup_terminal()?;
     let syntaxes = SyntaxSet::load_defaults_newlines();
     let themes = ThemeSet::load_defaults();
-    let highlighter = Highlighter::new(themes.themes["base16-ocean.dark"].clone(), syntaxes)
+    let highlighter = Highlighter::new(themes.themes["base16-ocean.dark"].clone())
         .override_background(Color::Reset);
-    let syntax = highlighter.syntaxes().find_syntax_by_name("SQL").unwrap();
+    let syntax = syntaxes.find_syntax_by_name("SQL").unwrap();
     let highlight = highlighter.highlight_reader(
         File::open("./examples/sqlite_custom/build.rs").unwrap(),
         syntax,
+        &syntaxes,
     );
     terminal.draw(|frame| frame.render_widget(highlight, frame.area()))?;
     read()?;

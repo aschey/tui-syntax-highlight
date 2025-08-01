@@ -23,11 +23,11 @@ fn main() -> Result<()> {
 
     let mut terminal = setup_terminal()?;
 
-    let highlighter =
-        Highlighter::new(themes.themes.get("ansi").unwrap().clone(), syntaxes.clone());
+    let highlighter = Highlighter::new(themes.themes.get("ansi").unwrap().clone());
     let highlight = highlighter.highlight_lines(
         "select a,b,c from table;\nselect b,c,d from table2;",
         syntaxes.find_syntax_by_name("SQL").unwrap(),
+        &syntaxes,
     );
 
     terminal.draw(|frame| frame.render_widget(highlight, frame.area()))?;
