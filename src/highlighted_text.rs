@@ -5,6 +5,7 @@ use ratatui::text::Text;
 use ratatui::widgets::{Paragraph, Widget};
 pub use syntect;
 
+#[derive(Default, Clone, Eq, PartialEq, Hash)]
 pub struct HighlightedText<'a>(pub(crate) Text<'a>);
 
 impl<'a> HighlightedText<'a> {

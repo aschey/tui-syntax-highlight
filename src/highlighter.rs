@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::io::{self, BufRead, BufReader};
 use std::sync::Arc;
 
@@ -12,6 +13,7 @@ use crate::{HighlightedText, IntoLines};
 
 type GutterFn = dyn Fn(usize, Style) -> Vec<Span<'static>> + Send + Sync;
 
+#[derive(Clone)]
 pub struct Highlighter {
     theme: Theme,
     override_background: Option<Color>,
@@ -22,6 +24,25 @@ pub struct Highlighter {
     line_number_padding: usize,
     line_number_separator: String,
     is_ansi_theme: bool,
+}
+
+impl Debug for Highlighter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Highlighter")
+            .field("theme", &self.theme)
+            .field("override_background", &self.override_background)
+            .field("line_number_style", &self.line_number_style)
+            .field(
+                "line_number_separator_style",
+                &self.line_number_separator_style,
+            )
+            .field("gutter_template", &"<fn>")
+            .field("line_numbers", &self.line_numbers)
+            .field("line_number_padding", &self.line_number_padding)
+            .field("line_number_separator", &self.line_number_separator)
+            .field("is_ansi_theme", &self.is_ansi_theme)
+            .finish()
+    }
 }
 
 impl Highlighter {
@@ -93,7 +114,7 @@ impl Highlighter {
         reader: R,
         syntax: &SyntaxReference,
         syntaxes: &SyntaxSet,
-    ) -> Result<HighlightedText, crate::Error>
+    ) -> Result<HighlightedText<'static>, crate::Error>
     where
         R: io::Read,
     {
@@ -123,7 +144,7 @@ impl Highlighter {
         source: T,
         syntax: &SyntaxReference,
         syntaxes: &SyntaxSet,
-    ) -> Result<HighlightedText, crate::Error>
+    ) -> Result<HighlightedText<'static>, crate::Error>
     where
         T: IntoLines,
     {
@@ -141,7 +162,8 @@ impl Highlighter {
                 self.highlight_line(line, &mut highlighter, i + 1, line_number_style, syntaxes)
             })
             .collect();
-        Ok(self.to_text(Text::from_iter(formatted?)))
+        let formatted = formatted?;
+        Ok(self.to_text(Text::from_iter(formatted)))
     }
 
     fn to_text<'a>(&self, text: Text<'a>) -> HighlightedText<'a> {
