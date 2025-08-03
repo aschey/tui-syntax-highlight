@@ -19,7 +19,7 @@ impl<'a> HighlightedText<'a> {
 
     pub fn into_paragraph(self) -> Paragraph<'a> {
         let bg = self.0.style.bg;
-        let paragraph = Paragraph::new(self.0);
+        let paragraph = Paragraph::new(self);
         if let Some(bg) = bg {
             paragraph.bg(bg)
         } else {
@@ -28,14 +28,23 @@ impl<'a> HighlightedText<'a> {
     }
 }
 
+impl<'a> From<HighlightedText<'a>> for Text<'a> {
+    fn from(value: HighlightedText<'a>) -> Self {
+        value.into_text()
+    }
+}
+
+impl<'a> From<HighlightedText<'a>> for Paragraph<'a> {
+    fn from(value: HighlightedText<'a>) -> Self {
+        value.into_paragraph()
+    }
+}
+
 impl Widget for HighlightedText<'_> {
     fn render(self, area: Rect, buf: &mut Buffer)
     where
         Self: Sized,
     {
-        if let Some(bg) = self.0.style.bg {
-            buf.set_style(area, Style::new().bg(bg));
-        }
         self.0.render(area, buf);
     }
 }

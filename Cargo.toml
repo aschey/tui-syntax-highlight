@@ -26,3 +26,21 @@ syntect = { version = "5", default-features = false, features = [
   "default-themes",
 ] }
 syntect-assets = "0.23"
+
+[workspace.lints.rustdoc]
+broken_intra_doc_links = "deny"
+
+[workspace.lints.clippy]
+unwrap_used = "deny"
+allow_attributes = "deny"
+doc_markdown = "warn"
+default_trait_access = "warn"
+ignored_unit_patterns = "warn"
+semicolon_if_nothing_returned = "warn"
+missing_fields_in_debug = "warn"
+use_self = "warn"
+impl_trait_in_params = "warn"
+missing_panics_doc = "warn"
+explicit_iter_loop = "warn"
+explicit_into_iter_loop = "warn"
+redundant_closure_for_method_calls = "warn"

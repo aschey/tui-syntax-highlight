@@ -1,3 +1,7 @@
+#![warn(missing_docs)]
+#![forbid(clippy::unwrap_used)]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+
 mod highlighted_text;
 mod highlighter;
 

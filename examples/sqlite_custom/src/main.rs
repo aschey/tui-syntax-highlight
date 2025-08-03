@@ -30,7 +30,9 @@ fn main() -> Result<()> {
         &syntaxes,
     )?;
 
-    terminal.draw(|frame| frame.render_widget(highlight, frame.area()))?;
+    terminal.draw(|frame| {
+        frame.render_widget(highlight, frame.area());
+    })?;
     read()?;
     restore_terminal(terminal)?;
     Ok(())
