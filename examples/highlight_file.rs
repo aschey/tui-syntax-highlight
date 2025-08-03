@@ -1,3 +1,4 @@
+use std::cell::LazyCell;
 use std::error::Error;
 use std::fs::File;
 use std::io::{Stdout, stdout};
@@ -8,18 +9,21 @@ use ratatui::crossterm::execute;
 use ratatui::crossterm::terminal::{
     EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode,
 };
-use syntect::highlighting::ThemeSet;
-use syntect::parsing::SyntaxSet;
+use syntect_assets::assets::HighlightingAssets;
 use tui_syntax_highlight::Highlighter;
 
 type Terminal = ratatui::Terminal<CrosstermBackend<Stdout>>;
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
+thread_local! {
+    static ASSETS: LazyCell<HighlightingAssets> = LazyCell::new(HighlightingAssets::from_binary);
+}
+
 fn main() -> Result<()> {
     let mut terminal = setup_terminal()?;
-    let syntaxes = SyntaxSet::load_defaults_newlines();
-    let themes = ThemeSet::load_defaults();
-    let highlighter = Highlighter::new(themes.themes["base16-ocean.dark"].clone());
+    let theme = ASSETS.with(|a| a.get_theme("Nord").clone());
+    let highlighter = Highlighter::new(theme);
+    let syntaxes = ASSETS.with(|a| a.get_syntax_set().cloned()).unwrap();
     let syntax = syntaxes.find_syntax_by_name("Rust").unwrap();
     let highlight = highlighter.highlight_reader(
         File::open("./examples/sqlite_custom/build.rs").unwrap(),

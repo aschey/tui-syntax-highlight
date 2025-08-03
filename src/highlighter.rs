@@ -1,5 +1,6 @@
 use std::fmt::Debug;
 use std::io::{self, BufRead, BufReader};
+use std::ops::Range;
 use std::sync::Arc;
 
 use ratatui::style::{Color, Style, Stylize};
@@ -9,7 +10,7 @@ use syntect::easy::HighlightLines;
 use syntect::highlighting::Theme;
 use syntect::parsing::{SyntaxReference, SyntaxSet};
 
-use crate::{HighlightedText, IntoLines};
+use crate::{ColorMode, HighlightedText, IntoLines, syntect_color_to_tui};
 
 type GutterFn = dyn Fn(usize, Style) -> Vec<Span<'static>> + Send + Sync;
 
@@ -23,7 +24,9 @@ pub struct Highlighter {
     line_numbers: bool,
     line_number_padding: usize,
     line_number_separator: String,
-    is_ansi_theme: bool,
+    color_mode: ColorMode,
+    highlight_ranges: Vec<Range<usize>>,
+    highlight_style: Style,
 }
 
 impl Debug for Highlighter {
@@ -40,18 +43,13 @@ impl Debug for Highlighter {
             .field("line_numbers", &self.line_numbers)
             .field("line_number_padding", &self.line_number_padding)
             .field("line_number_separator", &self.line_number_separator)
-            .field("is_ansi_theme", &self.is_ansi_theme)
+            .field("color_mode", &self.color_mode)
             .finish()
     }
 }
 
 impl Highlighter {
     pub fn new(theme: Theme) -> Self {
-        let is_ansi_theme = theme
-            .name
-            .as_deref()
-            .unwrap_or_default()
-            .eq_ignore_ascii_case("ansi");
         Self {
             theme,
             override_background: None,
@@ -61,7 +59,9 @@ impl Highlighter {
             line_numbers: true,
             line_number_padding: 4,
             line_number_separator: "│".to_string(),
-            is_ansi_theme,
+            color_mode: ColorMode::TrueColor,
+            highlight_ranges: Vec::new(),
+            highlight_style: Style::new(),
         }
     }
 
@@ -98,6 +98,16 @@ impl Highlighter {
         T: Into<String>,
     {
         self.line_number_separator = separator.into();
+        self
+    }
+
+    pub fn highlight_range(mut self, range: Range<usize>) -> Self {
+        self.highlight_ranges.push(range);
+        self
+    }
+
+    pub fn highlight_style(mut self, style: Style) -> Self {
+        self.highlight_style = style;
         self
     }
 
@@ -166,7 +176,7 @@ impl Highlighter {
         Ok(self.to_text(Text::from_iter(formatted)))
     }
 
-    fn to_text<'a>(&self, text: Text<'a>) -> HighlightedText<'a> {
+    fn to_text(&self, text: Text<'static>) -> HighlightedText<'static> {
         if let Some(bg) = self.override_background {
             return HighlightedText(text.bg(bg));
         };
@@ -174,7 +184,7 @@ impl Highlighter {
             .theme
             .settings
             .background
-            .and_then(|bg| self.syntect_color_to_tui(bg))
+            .and_then(|bg| syntect_color_to_tui(bg, self.color_mode))
         {
             return HighlightedText(text.bg(bg));
         }
@@ -210,17 +220,19 @@ impl Highlighter {
             .theme
             .settings
             .gutter_foreground
-            .and_then(|fg| self.syntect_color_to_tui(fg))
+            .and_then(|fg| syntect_color_to_tui(fg, self.color_mode))
         {
             style = style.fg(fg);
         } else {
             style = style.dark_gray();
         }
-        if let Some(bg) = self
+        if let Some(bg) = self.override_background {
+            style = style.bg(bg);
+        } else if let Some(bg) = self
             .theme
             .settings
-            .gutter
-            .and_then(|bg| self.syntect_color_to_tui(bg))
+            .background
+            .and_then(|bg| syntect_color_to_tui(bg, self.color_mode))
         {
             style = style.bg(bg);
         }
@@ -243,15 +255,15 @@ impl Highlighter {
                 // 2 extra spaces for left/right padding
                 .saturating_sub(2);
             vec![
-                Span::raw(" ".repeat(spaces)),
+                Span::styled(" ".repeat(spaces), line_number_style),
                 Span::styled(line_number, line_number_style),
-                Span::raw(" "),
+                Span::styled(" ", line_number_style),
                 Span::styled(
                     self.line_number_separator.clone(),
                     self.line_number_separator_style
                         .unwrap_or(line_number_style),
                 ),
-                Span::raw(" "),
+                Span::styled(" ", line_number_style),
             ]
         } else {
             vec![]
@@ -265,77 +277,39 @@ impl Highlighter {
         line_number_style: Style,
     ) -> Line<'static> {
         let mut spans = self.get_initial_spans(line_number, line_number_style);
+
+        let highlight_row = self
+            .highlight_ranges
+            .iter()
+            .any(|r| r.contains(&line_number));
+
         for &(ref style, mut text) in v.iter() {
             let ends_with_newline = text.ends_with('\n');
             if ends_with_newline {
                 text = &text[..text.len() - 1];
             }
 
-            let tui_style = self.syntect_style_to_tui(style);
+            let mut tui_style = self.syntect_style_to_tui(*style);
+            if highlight_row {
+                tui_style = tui_style.patch(self.highlight_style);
+            }
 
             spans.push(Span::styled(text.to_string(), tui_style));
         }
 
-        Line::from_iter(spans)
+        let mut line = Line::from_iter(spans);
+        if highlight_row {
+            line = line.patch_style(self.highlight_style);
+        }
+        line
     }
 
-    fn syntect_color_to_tui(&self, color: syntect::highlighting::Color) -> Option<Color> {
-        if self.is_ansi_theme {
-            if color.a == 0 {
-                return Some(ansi_color_to_tui(color.r));
-            } else if color.a == 1 {
-                return None;
-            }
-        }
-        Some(Color::Rgb(color.r, color.g, color.b))
-    }
+    fn syntect_style_to_tui(&self, style: syntect::highlighting::Style) -> ratatui::style::Style {
+        let mut tui_style = crate::syntect_style_to_tui(style, self.color_mode);
 
-    fn syntect_style_to_tui(&self, style: &syntect::highlighting::Style) -> ratatui::style::Style {
-        let mut tui_style = ratatui::style::Style::new();
-        if let Some(fg) = self.syntect_color_to_tui(style.foreground) {
-            tui_style = tui_style.fg(fg);
-        }
         if let Some(bg) = self.override_background {
             tui_style = tui_style.bg(bg);
-        } else if let Some(bg) = self.syntect_color_to_tui(style.background) {
-            tui_style = tui_style.bg(bg);
         }
-        tui_style.add_modifier(syntect_modifiers_to_tui(&style.font_style))
+        tui_style
     }
-}
-
-fn ansi_color_to_tui(value: u8) -> ratatui::style::Color {
-    match value {
-        0x00 => ratatui::style::Color::Black,
-        0x01 => ratatui::style::Color::Red,
-        0x02 => ratatui::style::Color::Green,
-        0x03 => ratatui::style::Color::Yellow,
-        0x04 => ratatui::style::Color::Blue,
-        0x05 => ratatui::style::Color::Magenta,
-        0x06 => ratatui::style::Color::Cyan,
-        0x07 => ratatui::style::Color::Gray,
-        0x08 => ratatui::style::Color::DarkGray,
-        0x09 => ratatui::style::Color::LightRed,
-        0x0A => ratatui::style::Color::LightGreen,
-        0x0B => ratatui::style::Color::LightYellow,
-        0x0C => ratatui::style::Color::LightBlue,
-        0x0D => ratatui::style::Color::LightMagenta,
-        0x0E => ratatui::style::Color::LightCyan,
-        0x0F => ratatui::style::Color::White,
-        _ => ratatui::style::Color::Gray,
-    }
-}
-
-fn syntect_modifiers_to_tui(style: &syntect::highlighting::FontStyle) -> ratatui::style::Modifier {
-    let mut modifier = ratatui::style::Modifier::empty();
-    if style.intersects(syntect::highlighting::FontStyle::BOLD) {
-        modifier |= ratatui::style::Modifier::BOLD;
-    }
-    if style.intersects(syntect::highlighting::FontStyle::ITALIC) {
-        modifier |= ratatui::style::Modifier::ITALIC;
-    }
-    if style.intersects(syntect::highlighting::FontStyle::UNDERLINE) {
-        modifier |= ratatui::style::Modifier::UNDERLINED;
-    }
-    modifier
 }
