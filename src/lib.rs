@@ -2,17 +2,16 @@
 #![forbid(clippy::unwrap_used)]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
-mod highlighted_text;
 mod highlighter;
 
 use std::borrow::Cow;
 use std::fmt::Display;
 use std::io;
 
-pub use highlighted_text::*;
 pub use highlighter::*;
 use ratatui::style::Color;
 pub use syntect;
+use termprofile::anstyle;
 
 pub trait IntoLines {
     fn into_lines(self) -> Vec<String>;
@@ -123,9 +122,9 @@ pub fn syntect_color_to_tui(
     } else if color_mode == ColorMode::TrueColor {
         Some(Color::Rgb(color.r, color.g, color.b))
     } else {
-        Some(Color::Indexed(ansi_colours::ansi256_from_rgb((
-            color.r, color.g, color.b,
-        ))))
+        Some(Color::Indexed(termprofile::rgb_to_ansi256(
+            anstyle::RgbColor(color.r, color.g, color.b),
+        )))
     }
 }
 

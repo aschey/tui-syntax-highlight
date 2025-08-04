@@ -18,7 +18,7 @@ type Result<T> = std::result::Result<T, Box<dyn Error>>;
 fn main() -> Result<()> {
     let syntax_bin = include_bytes!(concat!(env!("OUT_DIR"), "/sqlite.packdump"));
     let theme_bin = include_bytes!(concat!(env!("OUT_DIR"), "/themes.themedump"));
-    let syntaxes: SyntaxSet = dumps::from_uncompressed_data(syntax_bin).unwrap();
+    let syntaxes: SyntaxSet = dumps::from_uncompressed_data(syntax_bin)?;
     let themes: ThemeSet = dumps::from_binary(theme_bin);
 
     let mut terminal = setup_terminal()?;

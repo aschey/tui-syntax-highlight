@@ -105,23 +105,6 @@ fn highlight_file_ansi() {
     assert_snapshot!("highlight_file_ansi", draw(40, 3, highlight));
 }
 
-#[test]
-fn paragraph_text_matches() {
-    let highlighter = Highlighter::new(THEMES.themes["base16-ocean.dark"].clone());
-    let highlight = highlighter
-        .highlight_lines(
-            "select a,b,c from table;\nselect b,c,d from table2;",
-            SYNTAXES.find_syntax_by_name("SQL").unwrap(),
-            &SYNTAXES,
-        )
-        .unwrap();
-    let original = draw(40, 2, highlight.clone());
-    let text = draw(40, 2, highlight.clone().into_text());
-    let paragraph = draw(40, 2, highlight.into_paragraph());
-    assert_eq!(original.buffer(), text.buffer());
-    assert_eq!(original.buffer(), paragraph.buffer());
-}
-
 fn draw<W>(width: u16, height: u16, widget: W) -> TestBackend
 where
     W: Widget,

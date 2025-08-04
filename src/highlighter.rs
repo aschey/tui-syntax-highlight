@@ -10,7 +10,7 @@ use syntect::easy::HighlightLines;
 use syntect::highlighting::Theme;
 use syntect::parsing::{SyntaxReference, SyntaxSet};
 
-use crate::{ColorMode, HighlightedText, IntoLines, syntect_color_to_tui};
+use crate::{ColorMode, IntoLines, syntect_color_to_tui};
 
 type GutterFn = dyn Fn(usize, Style) -> Vec<Span<'static>> + Send + Sync;
 
@@ -101,6 +101,11 @@ impl Highlighter {
         self
     }
 
+    pub fn color_mode(mut self, color_mode: ColorMode) -> Self {
+        self.color_mode = color_mode;
+        self
+    }
+
     pub fn highlight_range(mut self, range: Range<usize>) -> Self {
         self.highlight_ranges.push(range);
         self
@@ -119,34 +124,33 @@ impl Highlighter {
         self
     }
 
+    pub fn create_line_highlighter(&self, syntax: &SyntaxReference) -> HighlightLines<'_> {
+        HighlightLines::new(syntax, &self.theme)
+    }
+
     pub fn highlight_reader<R>(
         &self,
         reader: R,
         syntax: &SyntaxReference,
         syntaxes: &SyntaxSet,
-    ) -> Result<HighlightedText<'static>, crate::Error>
+    ) -> Result<Text<'static>, crate::Error>
     where
         R: io::Read,
     {
         let mut reader = BufReader::new(reader);
         let mut highlighter = HighlightLines::new(syntax, &self.theme);
-        let line_number_style = self.get_line_number_style();
+        let line_number_style = self.calculate_line_number_style();
         let mut line = String::new();
         let mut formatted = Vec::new();
         let mut i = 1;
         while reader.read_line(&mut line).map_err(crate::Error::Source)? > 0 {
-            let highlighted = self.highlight_line(
-                line.clone(),
-                &mut highlighter,
-                i,
-                line_number_style,
-                syntaxes,
-            )?;
+            let highlighted =
+                self.highlight_line(&mut line, &mut highlighter, i, line_number_style, syntaxes)?;
             formatted.push(highlighted);
             line.clear();
             i += 1;
         }
-        Ok(self.to_text(Text::from_iter(formatted)))
+        Ok(Text::from_iter(formatted))
     }
 
     pub fn highlight_lines<T>(
@@ -154,64 +158,52 @@ impl Highlighter {
         source: T,
         syntax: &SyntaxReference,
         syntaxes: &SyntaxSet,
-    ) -> Result<HighlightedText<'static>, crate::Error>
+    ) -> Result<Text<'static>, crate::Error>
     where
         T: IntoLines,
     {
         let lines = source.into_lines();
         if lines.is_empty() {
-            return Ok(HighlightedText(Text::raw("")));
+            return Ok(Text::raw(""));
         }
 
         let mut highlighter = HighlightLines::new(syntax, &self.theme);
-        let line_number_style = self.get_line_number_style();
+        let line_number_style = self.calculate_line_number_style();
         let formatted: Result<Vec<_>, crate::Error> = lines
             .into_iter()
             .enumerate()
-            .map(|(i, line)| {
-                self.highlight_line(line, &mut highlighter, i + 1, line_number_style, syntaxes)
+            .map(|(i, mut line)| {
+                self.highlight_line(
+                    &mut line,
+                    &mut highlighter,
+                    i + 1,
+                    line_number_style,
+                    syntaxes,
+                )
             })
             .collect();
         let formatted = formatted?;
-        Ok(self.to_text(Text::from_iter(formatted)))
+        Ok(Text::from_iter(formatted))
     }
 
-    fn to_text(&self, text: Text<'static>) -> HighlightedText<'static> {
-        if let Some(bg) = self.override_background {
-            return HighlightedText(text.bg(bg));
-        };
-        if let Some(bg) = self
-            .theme
-            .settings
-            .background
-            .and_then(|bg| syntect_color_to_tui(bg, self.color_mode))
-        {
-            return HighlightedText(text.bg(bg));
-        }
-        HighlightedText(text)
-    }
-
-    fn highlight_line(
+    pub fn highlight_line(
         &self,
-        line: String,
+        line: &mut String,
         highlighter: &mut HighlightLines,
         line_number: usize,
         line_number_style: Style,
         syntaxes: &SyntaxSet,
     ) -> Result<Line<'static>, crate::Error> {
-        let line = if line.ends_with('\n') {
-            line
-        } else {
-            format!("{line}\n")
-        };
-
+        if !line.ends_with('\n') {
+            line.push('\n');
+        }
         let regions = highlighter
-            .highlight_line(&line, syntaxes)
+            .highlight_line(line, syntaxes)
             .map_err(crate::Error::Highlight)?;
-        Ok(self.to_tui_text(&regions, line_number, line_number_style))
+        Ok(self.to_line(&regions, line_number, line_number_style))
     }
 
-    fn get_line_number_style(&self) -> Style {
+    pub fn calculate_line_number_style(&self) -> Style {
         if let Some(style) = self.line_number_style {
             return style;
         }
@@ -270,7 +262,7 @@ impl Highlighter {
         }
     }
 
-    fn to_tui_text(
+    fn to_line(
         &self,
         v: &[(syntect::highlighting::Style, &str)],
         line_number: usize,
@@ -301,7 +293,25 @@ impl Highlighter {
         if highlight_row {
             line = line.patch_style(self.highlight_style);
         }
-        line
+        self.apply_background(line)
+    }
+
+    fn apply_background<'a, S>(&self, item: S) -> S
+    where
+        S: Stylize<'a, S>,
+    {
+        if let Some(bg) = self.override_background {
+            return item.bg(bg);
+        };
+        if let Some(bg) = self
+            .theme
+            .settings
+            .background
+            .and_then(|bg| syntect_color_to_tui(bg, self.color_mode))
+        {
+            return item.bg(bg);
+        }
+        item
     }
 
     fn syntect_style_to_tui(&self, style: syntect::highlighting::Style) -> ratatui::style::Style {
