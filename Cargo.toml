@@ -12,13 +12,14 @@ members = ["./examples/sqlite_custom"]
 [dependencies]
 ratatui = { version = "0.29.0", default-features = false }
 syntect = { version = "5", default-features = false, features = ["parsing"] }
-termprofile = { git = "https://github.com/aschey/termprofile", rev = "74691a0a0106ddbaf7a5f820044c4b4f8b5962f0", features = [
+termprofile = { git = "https://github.com/aschey/termprofile", rev = "796651984cd97b3bd8a2c1956a0013b815719261", features = [
   "convert",
 ], default-features = false }
 
 [features]
 regex-fancy = ["syntect/regex-fancy"]
 regex-onig = ["syntect/regex-onig"]
+color-cache = ["termprofile/color-cache"]
 default = ["regex-onig"]
 
 [dev-dependencies]
