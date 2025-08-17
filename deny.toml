@@ -10,6 +10,7 @@ allow = [
   "ISC",
   "OpenSSL",
   "CDLA-Permissive-2.0",
+  "WTFPL",
   "Zlib",
 ]
 
