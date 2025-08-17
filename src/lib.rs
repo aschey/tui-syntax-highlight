@@ -11,7 +11,7 @@ use std::io;
 
 pub use convert::*;
 pub use highlighter::*;
-pub use syntect;
+pub use {syntect, termprofile};
 
 pub trait IntoLines {
     fn into_lines(self) -> Vec<String>;

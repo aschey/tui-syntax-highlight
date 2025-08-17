@@ -84,7 +84,7 @@ impl Highlighter {
         C: Into<Color>,
     {
         let background = background.into();
-        self.override_background = self.adapt_color(background);
+        self.override_background = Some(self.adapt_color(background).unwrap_or(Color::Reset));
         self
     }
 
@@ -307,25 +307,17 @@ impl Highlighter {
 
     fn adapt_style(&self, style: Style) -> Style {
         #[cfg(feature = "profile")]
-        {
-            let style = crate::tui_style_to_anstyle(style);
-            let style = self.profile.adapt_style(style);
-            crate::anstyle_style_to_tui(style)
-        }
+        return self.profile.adapt_style(style);
         #[cfg(not(feature = "profile"))]
-        style
+        return style;
     }
 
     fn adapt_color(&self, color: Color) -> Option<Color> {
         #[cfg(feature = "profile")]
-        {
-            let color = crate::tui_color_to_anstyle(color);
-            color
-                .and_then(|c| self.profile.adapt_color(c))
-                .map(crate::anstyle_color_to_tui)
-        }
+        return self.profile.adapt_color(color);
+
         #[cfg(not(feature = "profile"))]
-        Some(color)
+        return Some(color);
     }
 
     fn apply_background<'a, S>(&self, item: S) -> S
