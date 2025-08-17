@@ -11,7 +11,7 @@ use ratatui::crossterm::terminal::{
 };
 use syntect_assets::assets::HighlightingAssets;
 use termprofile::TermProfile;
-use tui_syntax_highlight::{ColorMode, Highlighter};
+use tui_syntax_highlight::Highlighter;
 
 type Terminal = ratatui::Terminal<CrosstermBackend<Stdout>>;
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
@@ -30,12 +30,7 @@ fn main() -> Result<()> {
             a.get_theme("ansi").clone()
         }
     });
-    let highlighter =
-        Highlighter::new(theme).color_mode(if term_profile == TermProfile::TrueColor {
-            ColorMode::TrueColor
-        } else {
-            ColorMode::Ansi256
-        });
+    let highlighter = Highlighter::with_profile(theme, term_profile);
     let syntaxes = ASSETS.with(|a| a.get_syntax_set().cloned())?;
     let syntax = syntaxes.find_syntax_by_name("Rust").unwrap();
     let highlight = highlighter.highlight_reader(

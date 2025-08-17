@@ -5,7 +5,7 @@ edition = "2024"
 publish = false
 
 [dependencies]
-ratatui = { version = "0.29.0" }
+ratatui = { version = "0.29" }
 syntect = { version = "5", default-features = false, features = [
   "yaml-load",
   "plist-load",

@@ -9,8 +9,10 @@ pub use syntect;
 use syntect::easy::HighlightLines;
 use syntect::highlighting::Theme;
 use syntect::parsing::{SyntaxReference, SyntaxSet};
+#[cfg(feature = "profile")]
+use termprofile::TermProfile;
 
-use crate::{ColorMode, IntoLines, syntect_color_to_tui};
+use crate::{Converter, IntoLines};
 
 type GutterFn = dyn Fn(usize, Style) -> Vec<Span<'static>> + Send + Sync;
 
@@ -24,9 +26,11 @@ pub struct Highlighter {
     line_numbers: bool,
     line_number_padding: usize,
     line_number_separator: String,
-    color_mode: ColorMode,
+    #[cfg(feature = "profile")]
+    profile: TermProfile,
     highlight_ranges: Vec<Range<usize>>,
     highlight_style: Style,
+    converter: Converter,
 }
 
 impl Debug for Highlighter {
@@ -43,7 +47,7 @@ impl Debug for Highlighter {
             .field("line_numbers", &self.line_numbers)
             .field("line_number_padding", &self.line_number_padding)
             .field("line_number_separator", &self.line_number_separator)
-            .field("color_mode", &self.color_mode)
+            .field("converter", &self.converter)
             .finish()
     }
 }
@@ -59,17 +63,28 @@ impl Highlighter {
             line_numbers: true,
             line_number_padding: 4,
             line_number_separator: "│".to_string(),
-            color_mode: ColorMode::TrueColor,
+            #[cfg(feature = "profile")]
+            profile: TermProfile::TrueColor,
             highlight_ranges: Vec::new(),
             highlight_style: Style::new(),
+            converter: Converter::new(),
         }
+    }
+
+    #[cfg(feature = "profile")]
+    pub fn with_profile(theme: Theme, profile: TermProfile) -> Self {
+        let mut this = Self::new(theme);
+        this.profile = profile;
+        this.converter = Converter::with_profile(profile);
+        this
     }
 
     pub fn override_background<C>(mut self, background: C) -> Self
     where
         C: Into<Color>,
     {
-        self.override_background = Some(background.into());
+        let background = background.into();
+        self.override_background = self.adapt_color(background);
         self
     }
 
@@ -84,12 +99,12 @@ impl Highlighter {
     }
 
     pub fn line_number_style(mut self, style: Style) -> Self {
-        self.line_number_style = Some(style);
+        self.line_number_style = Some(self.adapt_style(style));
         self
     }
 
     pub fn line_number_separator_style(mut self, style: Style) -> Self {
-        self.line_number_separator_style = Some(style);
+        self.line_number_separator_style = Some(self.adapt_style(style));
         self
     }
 
@@ -101,18 +116,13 @@ impl Highlighter {
         self
     }
 
-    pub fn color_mode(mut self, color_mode: ColorMode) -> Self {
-        self.color_mode = color_mode;
-        self
-    }
-
     pub fn highlight_range(mut self, range: Range<usize>) -> Self {
         self.highlight_ranges.push(range);
         self
     }
 
     pub fn highlight_style(mut self, style: Style) -> Self {
-        self.highlight_style = style;
+        self.highlight_style = self.adapt_style(style);
         self
     }
 
@@ -212,7 +222,7 @@ impl Highlighter {
             .theme
             .settings
             .gutter_foreground
-            .and_then(|fg| syntect_color_to_tui(fg, self.color_mode))
+            .and_then(|fg| self.converter.syntect_color_to_tui(fg))
         {
             style = style.fg(fg);
         } else {
@@ -224,11 +234,11 @@ impl Highlighter {
             .theme
             .settings
             .background
-            .and_then(|bg| syntect_color_to_tui(bg, self.color_mode))
+            .and_then(|bg| self.converter.syntect_color_to_tui(bg))
         {
             style = style.bg(bg);
         }
-        style
+        self.adapt_style(style)
     }
 
     fn get_initial_spans(
@@ -269,7 +279,6 @@ impl Highlighter {
         line_number_style: Style,
     ) -> Line<'static> {
         let mut spans = self.get_initial_spans(line_number, line_number_style);
-
         let highlight_row = self
             .highlight_ranges
             .iter()
@@ -296,6 +305,29 @@ impl Highlighter {
         self.apply_background(line)
     }
 
+    fn adapt_style(&self, style: Style) -> Style {
+        #[cfg(feature = "profile")]
+        {
+            let style = crate::tui_style_to_anstyle(style);
+            let style = self.profile.adapt_style(style);
+            crate::anstyle_style_to_tui(style)
+        }
+        #[cfg(not(feature = "profile"))]
+        style
+    }
+
+    fn adapt_color(&self, color: Color) -> Option<Color> {
+        #[cfg(feature = "profile")]
+        {
+            let color = crate::tui_color_to_anstyle(color);
+            color
+                .and_then(|c| self.profile.adapt_color(c))
+                .map(crate::anstyle_color_to_tui)
+        }
+        #[cfg(not(feature = "profile"))]
+        Some(color)
+    }
+
     fn apply_background<'a, S>(&self, item: S) -> S
     where
         S: Stylize<'a, S>,
@@ -307,7 +339,7 @@ impl Highlighter {
             .theme
             .settings
             .background
-            .and_then(|bg| syntect_color_to_tui(bg, self.color_mode))
+            .and_then(|bg| self.converter.syntect_color_to_tui(bg))
         {
             return item.bg(bg);
         }
@@ -315,7 +347,7 @@ impl Highlighter {
     }
 
     fn syntect_style_to_tui(&self, style: syntect::highlighting::Style) -> ratatui::style::Style {
-        let mut tui_style = crate::syntect_style_to_tui(style, self.color_mode);
+        let mut tui_style = self.converter.syntect_style_to_tui(style);
 
         if let Some(bg) = self.override_background {
             tui_style = tui_style.bg(bg);
