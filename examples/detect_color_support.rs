@@ -10,7 +10,7 @@ use ratatui::crossterm::terminal::{
     EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode,
 };
 use syntect_assets::assets::HighlightingAssets;
-use termprofile::TermProfile;
+use termprofile::{DetectorSettings, TermProfile};
 use tui_syntax_highlight::Highlighter;
 
 type Terminal = ratatui::Terminal<CrosstermBackend<Stdout>>;
@@ -21,8 +21,9 @@ thread_local! {
 }
 
 fn main() -> Result<()> {
+    let term_profile = TermProfile::detect(&stdout(), DetectorSettings::with_query()?);
+
     let mut terminal = setup_terminal()?;
-    let term_profile = TermProfile::detect(&stdout());
     let theme = ASSETS.with(|a| {
         if term_profile >= TermProfile::Ansi256 {
             a.get_theme("Nord").clone()

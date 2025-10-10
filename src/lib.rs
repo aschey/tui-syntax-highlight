@@ -5,7 +5,6 @@
 mod convert;
 mod highlighter;
 
-use std::borrow::Cow;
 use std::fmt::Display;
 use std::io;
 
@@ -14,49 +13,6 @@ pub use highlighter::*;
 pub use syntect;
 #[cfg(feature = "profile")]
 pub use termprofile;
-
-pub trait IntoLines {
-    fn into_lines(self) -> Vec<String>;
-}
-
-impl IntoLines for Vec<String> {
-    fn into_lines(self) -> Vec<String> {
-        self
-    }
-}
-
-impl IntoLines for Vec<&str> {
-    fn into_lines(self) -> Vec<String> {
-        self.into_iter().map(|s| s.into()).collect()
-    }
-}
-
-impl IntoLines for Vec<Cow<'_, str>> {
-    fn into_lines(self) -> Vec<String> {
-        self.into_iter().map(|s| s.into()).collect()
-    }
-}
-
-impl IntoLines for String {
-    fn into_lines(self) -> Vec<String> {
-        self.split('\n').map(|s| s.into()).collect()
-    }
-}
-
-impl IntoLines for &str {
-    fn into_lines(self) -> Vec<String> {
-        self.split('\n').map(|s| s.into()).collect()
-    }
-}
-
-impl IntoLines for Cow<'_, str> {
-    fn into_lines(self) -> Vec<String> {
-        match self {
-            Self::Owned(s) => s.into_lines(),
-            Self::Borrowed(s) => s.into_lines(),
-        }
-    }
-}
 
 #[derive(Debug)]
 pub enum Error {

@@ -9,6 +9,7 @@ use ratatui::text::Span;
 use ratatui::widgets::Widget;
 use syntect::highlighting::ThemeSet;
 use syntect::parsing::SyntaxSet;
+use syntect::util::LinesWithEndings;
 use syntect_assets::assets::HighlightingAssets;
 use tui_syntax_highlight::Highlighter;
 
@@ -33,7 +34,7 @@ fn highlighter() {
     let highlighter = Highlighter::new(THEMES.themes["base16-ocean.dark"].clone());
     let highlight = highlighter
         .highlight_lines(
-            "select a,b,c from table;\nselect b,c,d from table2;",
+            LinesWithEndings::from("select a,b,c from table;\nselect b,c,d from table2;"),
             SYNTAXES.find_syntax_by_name("SQL").unwrap(),
             &SYNTAXES,
         )
@@ -47,7 +48,7 @@ fn highlighter_no_line_number() {
         Highlighter::new(THEMES.themes["base16-ocean.dark"].clone()).line_numbers(false);
     let highlight = highlighter
         .highlight_lines(
-            "select a,b,c from table;\nselect b,c,d from table2;",
+            LinesWithEndings::from("select a,b,c from table;\nselect b,c,d from table2;"),
             SYNTAXES.find_syntax_by_name("SQL").unwrap(),
             &SYNTAXES,
         )
@@ -61,7 +62,7 @@ fn highlighter_override_bg() {
         .override_background(Color::Reset);
     let highlight = highlighter
         .highlight_lines(
-            "select a,b,c from table;\nselect b,c,d from table2;",
+            LinesWithEndings::from("select a,b,c from table;\nselect b,c,d from table2;"),
             SYNTAXES.find_syntax_by_name("SQL").unwrap(),
             &SYNTAXES,
         )
@@ -81,7 +82,7 @@ fn highlighter_template() {
         });
     let highlight = highlighter
         .highlight_lines(
-            "select a,b,c from table;\nselect b,c,d from table2;",
+            LinesWithEndings::from("select a,b,c from table;\nselect b,c,d from table2;"),
             SYNTAXES.find_syntax_by_name("SQL").unwrap(),
             &SYNTAXES,
         )

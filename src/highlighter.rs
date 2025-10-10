@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::fmt::Debug;
 use std::io::{self, BufRead, BufReader};
 use std::ops::Range;
@@ -12,7 +13,7 @@ use syntect::parsing::{SyntaxReference, SyntaxSet};
 #[cfg(feature = "profile")]
 use termprofile::TermProfile;
 
-use crate::{Converter, IntoLines};
+use crate::Converter;
 
 type GutterFn = dyn Fn(usize, Style) -> Vec<Span<'static>> + Send + Sync;
 
@@ -155,7 +156,7 @@ impl Highlighter {
         let mut i = 1;
         while reader.read_line(&mut line).map_err(crate::Error::Source)? > 0 {
             let highlighted =
-                self.highlight_line(&mut line, &mut highlighter, i, line_number_style, syntaxes)?;
+                self.highlight_line(&line, &mut highlighter, i, line_number_style, syntaxes)?;
             formatted.push(highlighted);
             line.clear();
             i += 1;
@@ -163,33 +164,22 @@ impl Highlighter {
         Ok(Text::from_iter(formatted))
     }
 
-    pub fn highlight_lines<T>(
+    pub fn highlight_lines<'a, T>(
         &self,
         source: T,
         syntax: &SyntaxReference,
         syntaxes: &SyntaxSet,
     ) -> Result<Text<'static>, crate::Error>
     where
-        T: IntoLines,
+        T: IntoIterator<Item = &'a str>,
     {
-        let lines = source.into_lines();
-        if lines.is_empty() {
-            return Ok(Text::raw(""));
-        }
-
         let mut highlighter = HighlightLines::new(syntax, &self.theme);
         let line_number_style = self.calculate_line_number_style();
-        let formatted: Result<Vec<_>, crate::Error> = lines
+        let formatted: Result<Vec<_>, crate::Error> = source
             .into_iter()
             .enumerate()
-            .map(|(i, mut line)| {
-                self.highlight_line(
-                    &mut line,
-                    &mut highlighter,
-                    i + 1,
-                    line_number_style,
-                    syntaxes,
-                )
+            .map(|(i, line)| {
+                self.highlight_line(line, &mut highlighter, i + 1, line_number_style, syntaxes)
             })
             .collect();
         let formatted = formatted?;
@@ -198,17 +188,19 @@ impl Highlighter {
 
     pub fn highlight_line(
         &self,
-        line: &mut String,
+        line: &str,
         highlighter: &mut HighlightLines,
         line_number: usize,
         line_number_style: Style,
         syntaxes: &SyntaxSet,
     ) -> Result<Line<'static>, crate::Error> {
-        if !line.ends_with('\n') {
-            line.push('\n');
-        }
+        let line: Cow<_> = if line.ends_with("\n") {
+            line.into()
+        } else {
+            (line.to_string() + "\n").into()
+        };
         let regions = highlighter
-            .highlight_line(line, syntaxes)
+            .highlight_line(&line, syntaxes)
             .map_err(crate::Error::Highlight)?;
         Ok(self.to_line(&regions, line_number, line_number_style))
     }

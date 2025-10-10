@@ -11,9 +11,8 @@ members = ["./examples/sqlite_custom"]
 
 [dependencies]
 ratatui = { version = "0.29", default-features = false }
-ratatui-core = { version = "0.1.0-alpha.6", features = ["anstyle"] }
 syntect = { version = "5", default-features = false, features = ["parsing"] }
-termprofile = { git = "https://github.com/aschey/termprofile", rev = "a6d910dec7b9b035e44d7276536589e2faf8ad66", default-features = false, features = [
+termprofile = { version = "0.1", features = [
   "convert",
   "ratatui",
 ], optional = true }
@@ -34,6 +33,12 @@ syntect = { version = "5", default-features = false, features = [
   "default-themes",
 ] }
 syntect-assets = "0.23"
+termprofile = { version = "0.1", features = [
+  "convert",
+  "ratatui",
+  "terminfo",
+  "query-detect",
+] }
 
 [workspace.lints.rustdoc]
 broken_intra_doc_links = "deny"
