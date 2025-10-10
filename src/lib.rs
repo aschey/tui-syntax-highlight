@@ -1,6 +1,6 @@
 //#![warn(missing_docs)]
 #![forbid(clippy::unwrap_used)]
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 mod convert;
 mod highlighter;
