@@ -1,5 +1,5 @@
 use std::borrow::Cow;
-use std::fmt::Debug;
+use std::fmt::{self, Debug, Formatter};
 use std::io::{self, BufRead, BufReader};
 use std::ops::Range;
 use std::sync::Arc;
@@ -35,7 +35,7 @@ pub struct Highlighter {
 }
 
 impl Debug for Highlighter {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.debug_struct("Highlighter")
             .field("theme", &self.theme)
             .field("override_background", &self.override_background)
@@ -135,6 +135,17 @@ impl Highlighter {
         self
     }
 
+    pub fn get_background(&self) -> Option<Color> {
+        if let Some(bg) = self.override_background {
+            Some(bg)
+        } else {
+            self.theme
+                .settings
+                .background
+                .and_then(|bg| self.converter.syntect_color_to_tui(bg))
+        }
+    }
+
     pub fn create_line_highlighter(&self, syntax: &SyntaxReference) -> HighlightLines<'_> {
         HighlightLines::new(syntax, &self.theme)
     }
@@ -220,14 +231,7 @@ impl Highlighter {
         } else {
             style = style.dark_gray();
         }
-        if let Some(bg) = self.override_background {
-            style = style.bg(bg);
-        } else if let Some(bg) = self
-            .theme
-            .settings
-            .background
-            .and_then(|bg| self.converter.syntect_color_to_tui(bg))
-        {
+        if let Some(bg) = self.get_background() {
             style = style.bg(bg);
         }
         self.adapt_style(style)
