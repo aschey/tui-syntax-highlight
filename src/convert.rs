@@ -1,9 +1,9 @@
-#[cfg(feature = "profile")]
+#[cfg(feature = "termprofile")]
 use termprofile::TermProfile;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Converter {
-    #[cfg(feature = "profile")]
+    #[cfg(feature = "termprofile")]
     profile: TermProfile,
 }
 
@@ -16,12 +16,12 @@ impl Default for Converter {
 impl Converter {
     pub fn new() -> Self {
         Self {
-            #[cfg(feature = "profile")]
+            #[cfg(feature = "termprofile")]
             profile: TermProfile::TrueColor,
         }
     }
 
-    #[cfg(feature = "profile")]
+    #[cfg(feature = "termprofile")]
     pub fn with_profile(profile: TermProfile) -> Self {
         Self { profile }
     }
@@ -30,7 +30,7 @@ impl Converter {
         &self,
         style: syntect::highlighting::Style,
     ) -> ratatui::style::Style {
-        #[cfg(feature = "profile")]
+        #[cfg(feature = "termprofile")]
         if self.profile == termprofile::TermProfile::NoTty {
             return ratatui::style::Style::new();
         }
@@ -71,11 +71,11 @@ impl Converter {
         } else if color.a == 1 {
             None
         } else {
-            #[cfg(feature = "profile")]
+            #[cfg(feature = "termprofile")]
             return self
                 .profile
                 .adapt_color(ratatui::style::Color::Rgb(color.r, color.g, color.b));
-            #[cfg(not(feature = "profile"))]
+            #[cfg(not(feature = "termprofile"))]
             return Some(ratatui::style::Color::Rgb(color.r, color.g, color.b));
         }
     }

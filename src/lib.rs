@@ -1,6 +1,7 @@
-//#![warn(missing_docs)]
+#![warn(missing_docs)]
 #![forbid(clippy::unwrap_used)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
+#![doc = include_str!("../README.md")]
 
 mod convert;
 mod highlighter;
@@ -11,7 +12,7 @@ use std::io;
 pub use convert::*;
 pub use highlighter::*;
 pub use syntect;
-#[cfg(feature = "profile")]
+#[cfg(feature = "termprofile")]
 pub use termprofile;
 
 #[derive(Debug)]

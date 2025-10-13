@@ -25,13 +25,13 @@ fn main() -> Result<()> {
     let highlighter = Highlighter::new(theme);
     let syntaxes = ASSETS.with(|a| a.get_syntax_set().cloned())?;
     let syntax = syntaxes.find_syntax_by_name("Rust").unwrap();
-    let highlight = highlighter.highlight_reader(
+    let highlighted_text = highlighter.highlight_reader(
         File::open("./examples/sqlite_custom/build.rs")?,
         syntax,
         &syntaxes,
     )?;
     terminal.draw(|frame| {
-        frame.render_widget(highlight, frame.area());
+        frame.render_widget(highlighted_text, frame.area());
     })?;
     read()?;
     restore_terminal(terminal)?;

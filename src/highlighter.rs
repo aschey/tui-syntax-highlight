@@ -10,7 +10,7 @@ pub use syntect;
 use syntect::easy::HighlightLines;
 use syntect::highlighting::Theme;
 use syntect::parsing::{SyntaxReference, SyntaxSet};
-#[cfg(feature = "profile")]
+#[cfg(feature = "termprofile")]
 use termprofile::TermProfile;
 
 use crate::Converter;
@@ -27,7 +27,7 @@ pub struct Highlighter {
     line_numbers: bool,
     line_number_padding: usize,
     line_number_separator: String,
-    #[cfg(feature = "profile")]
+    #[cfg(feature = "termprofile")]
     profile: TermProfile,
     highlight_ranges: Vec<Range<usize>>,
     highlight_style: Style,
@@ -64,7 +64,7 @@ impl Highlighter {
             line_numbers: true,
             line_number_padding: 4,
             line_number_separator: "│".to_string(),
-            #[cfg(feature = "profile")]
+            #[cfg(feature = "termprofile")]
             profile: TermProfile::TrueColor,
             highlight_ranges: Vec::new(),
             highlight_style: Style::new(),
@@ -72,7 +72,7 @@ impl Highlighter {
         }
     }
 
-    #[cfg(feature = "profile")]
+    #[cfg(feature = "termprofile")]
     pub fn with_profile(theme: Theme, profile: TermProfile) -> Self {
         let mut this = Self::new(theme);
         this.profile = profile;
@@ -302,17 +302,17 @@ impl Highlighter {
     }
 
     fn adapt_style(&self, style: Style) -> Style {
-        #[cfg(feature = "profile")]
+        #[cfg(feature = "termprofile")]
         return self.profile.adapt_style(style);
-        #[cfg(not(feature = "profile"))]
+        #[cfg(not(feature = "termprofile"))]
         return style;
     }
 
     fn adapt_color(&self, color: Color) -> Option<Color> {
-        #[cfg(feature = "profile")]
+        #[cfg(feature = "termprofile")]
         return self.profile.adapt_color(color);
 
-        #[cfg(not(feature = "profile"))]
+        #[cfg(not(feature = "termprofile"))]
         return Some(color);
     }
 

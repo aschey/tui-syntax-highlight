@@ -20,9 +20,7 @@ termprofile = { version = "0.1", features = [
 [features]
 regex-fancy = ["syntect/regex-fancy"]
 regex-onig = ["syntect/regex-onig"]
-color-cache = ["termprofile?/color-cache"]
-profile = ["termprofile"]
-terminfo = ["termprofile?/terminfo"]
+termprofile = ["dep:termprofile"]
 default = ["regex-onig"]
 
 [dev-dependencies]
