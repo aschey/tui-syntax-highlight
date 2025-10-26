@@ -34,7 +34,7 @@ fn main() -> Result<()> {
         &syntaxes,
     )?;
 
-    let bg = highlighter.get_background().unwrap_or_default();
+    let bg = highlighter.get_background_color().unwrap_or_default();
     // Set the background on the text container so it matches.
     let paragraph = Paragraph::new(highlight).bg(bg).block(
         Block::bordered()

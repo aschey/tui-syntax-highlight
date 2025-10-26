@@ -1,6 +1,7 @@
 #[cfg(feature = "termprofile")]
 use termprofile::TermProfile;
 
+/// Converts between [`syntect`] styles and [`ratatui`] styles.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Converter {
     #[cfg(feature = "termprofile")]
@@ -14,6 +15,7 @@ impl Default for Converter {
 }
 
 impl Converter {
+    /// Creates a new [`Converter`].
     pub fn new() -> Self {
         Self {
             #[cfg(feature = "termprofile")]
@@ -21,11 +23,14 @@ impl Converter {
         }
     }
 
+    /// Creates a new [`Converter`] with the given [`TermProfile`].
     #[cfg(feature = "termprofile")]
     pub fn with_profile(profile: TermProfile) -> Self {
         Self { profile }
     }
 
+    /// Converts the syntect [`Style`](syntect::highlighting::Style) to a ratatui
+    /// [`Style`](ratatui::style::Style).
     pub fn syntect_style_to_tui(
         &self,
         style: syntect::highlighting::Style,
@@ -44,6 +49,8 @@ impl Converter {
         tui_style.add_modifier(syntect_modifiers_to_tui(&style.font_style))
     }
 
+    /// Converts the syntect [`Color`](ratatui::style::Color) to a ratatui
+    /// [`Color`](ratatui::style::Color).
     pub fn syntect_color_to_tui(
         &self,
         color: syntect::highlighting::Color,

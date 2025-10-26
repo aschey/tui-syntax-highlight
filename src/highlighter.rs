@@ -158,7 +158,7 @@ impl Highlighter {
     /// Returns the configured background color, accounting for both the theme and any overrides.
     /// This is useful if you want to render the code block into a larger section and you need the
     /// background colors to match.
-    pub fn get_background(&self) -> Option<Color> {
+    pub fn get_background_color(&self) -> Option<Color> {
         if let Some(bg) = self.override_background {
             Some(bg)
         } else {
@@ -169,6 +169,29 @@ impl Highlighter {
         }
     }
 
+    /// Returns the configured line number style, accounting for both the theme and any overrides.
+    pub fn get_line_number_style(&self) -> Style {
+        if let Some(style) = self.line_number_style {
+            return style;
+        }
+        let mut style = Style::new();
+        if let Some(fg) = self
+            .theme
+            .settings
+            .gutter_foreground
+            .and_then(|fg| self.converter.syntect_color_to_tui(fg))
+        {
+            style = style.fg(fg);
+        } else {
+            style = style.dark_gray();
+        }
+        if let Some(bg) = self.get_background_color() {
+            style = style.bg(bg);
+        }
+        self.adapt_style(style)
+    }
+
+    /// Highlights text from any [`io::Read`] source.
     pub fn highlight_reader<R>(
         &self,
         reader: R,
@@ -180,7 +203,7 @@ impl Highlighter {
     {
         let mut reader = BufReader::new(reader);
         let mut highlighter = HighlightLines::new(syntax, &self.theme);
-        let line_number_style = self.calculate_line_number_style();
+        let line_number_style = self.get_line_number_style();
         let mut line = String::new();
         let mut formatted = Vec::new();
         let mut i = 0;
@@ -194,6 +217,7 @@ impl Highlighter {
         Ok(Text::from_iter(formatted))
     }
 
+    /// Highlights text from an iterator.
     pub fn highlight_lines<'a, T>(
         &self,
         source: T,
@@ -204,7 +228,7 @@ impl Highlighter {
         T: IntoIterator<Item = &'a str>,
     {
         let mut highlighter = HighlightLines::new(syntax, &self.theme);
-        let line_number_style = self.calculate_line_number_style();
+        let line_number_style = self.get_line_number_style();
         let formatted: Result<Vec<_>, crate::Error> = source
             .into_iter()
             .enumerate()
@@ -216,6 +240,7 @@ impl Highlighter {
         Ok(Text::from_iter(formatted))
     }
 
+    /// Highlights a single line.
     pub fn highlight_line(
         &self,
         line: &str,
@@ -233,27 +258,6 @@ impl Highlighter {
             .highlight_line(&line, syntaxes)
             .map_err(crate::Error::Highlight)?;
         Ok(self.to_line(&regions, line_number, line_number_style))
-    }
-
-    pub fn calculate_line_number_style(&self) -> Style {
-        if let Some(style) = self.line_number_style {
-            return style;
-        }
-        let mut style = Style::new();
-        if let Some(fg) = self
-            .theme
-            .settings
-            .gutter_foreground
-            .and_then(|fg| self.converter.syntect_color_to_tui(fg))
-        {
-            style = style.fg(fg);
-        } else {
-            style = style.dark_gray();
-        }
-        if let Some(bg) = self.get_background() {
-            style = style.bg(bg);
-        }
-        self.adapt_style(style)
     }
 
     fn get_initial_spans(
