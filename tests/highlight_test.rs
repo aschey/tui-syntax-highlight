@@ -106,6 +106,20 @@ fn highlight_file_ansi() {
     assert_snapshot!("highlight_file_ansi", draw(40, 3, highlight));
 }
 
+#[test]
+fn highlight_range() {
+    let highlighter =
+        Highlighter::new(THEMES.themes["base16-ocean.dark"].clone()).highlight_range(0..1);
+    let highlight = highlighter
+        .highlight_lines(
+            LinesWithEndings::from("select a,b,c from table;\nselect b,c,d from table2;"),
+            SYNTAXES.find_syntax_by_name("SQL").unwrap(),
+            &SYNTAXES,
+        )
+        .unwrap();
+    assert_snapshot!("highlight_range", draw(40, 2, highlight));
+}
+
 fn draw<W>(width: u16, height: u16, widget: W) -> TestBackend
 where
     W: Widget,

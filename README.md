@@ -84,9 +84,9 @@ fn syntax_highlight() -> Result<(), Box<dyn Error>> {
 ## Additional Themes
 
 The [`syntect-assets`](https://crates.io/crates/syntect-assets) crate provides
-additional themes and syntaxes that can be used. It contains a few themes like
-`ansi`, `base16`, and `base16-256` that encodes colors in a special way - these
-special encodings are handled automatically by `tui-syntax-highlight`.
+additional themes and syntaxes that are compatible with `syntect`. It contains a
+few themes like `ansi`, `base16`, and `base16-256` that encodes colors in a
+special way - these special encodings are handled automatically by this crate.
 
 ## Custom Themes and Syntaxes
 
