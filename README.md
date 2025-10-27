@@ -25,9 +25,9 @@ compile.**
 - `regex-fancy` - Uses the `fancy-regex` regex engine. See
   [syntect's documentation](https://crates.io/crates/syntect) for more info.
 
-- `tui-syntax-highlight` - Enables integration with
-  [`tui-syntax-highlight`](https://crates.io/crates/tui-syntax-highlight) to detect the
-  terminal's color support level and automatically use compatible colors.
+- `termprofile` - Enables integration with
+  [`termprofile`](https://crates.io/crates/termprofile) to detect the terminal's
+  color support level and automatically use compatible colors.
 
 ## Usage
 
