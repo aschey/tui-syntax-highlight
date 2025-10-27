@@ -1,9 +1,17 @@
 [package]
 name = "tui-syntax-highlight"
+description = "A syntax highlighter for Ratatui apps"
 version = "0.1.0"
 edition = "2024"
+rust-version = "1.88.0"
+authors = ["Austin Schey <aschey13@gmail.com>"]
 license = "MIT OR Apache-2.0"
-rust-version = "1.88"
+readme = "README.md"
+include = ["/src", "/examples", "/tests", "LICENSE-MIT", "LICENSE-APACHE"]
+repository = "https://github.com/aschey/tui-syntax-highlight"
+homepage = "https://github.com/aschey/tui-syntax-highlight"
+keywords = ["tui", "terminal"]
+categories = ["command-line-interface"]
 
 [workspace]
 resolver = "3"
