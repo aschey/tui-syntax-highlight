@@ -38,11 +38,10 @@ termprofile = { version = "0.1", features = [
   "query-detect",
 ] }
 
-[workspace.lints.rustdoc]
+[lints.rustdoc]
 broken_intra_doc_links = "deny"
 
-[workspace.lints.clippy]
-unwrap_used = "deny"
+[lints.clippy]
 allow_attributes = "deny"
 doc_markdown = "warn"
 default_trait_access = "warn"
@@ -55,3 +54,16 @@ missing_panics_doc = "warn"
 explicit_iter_loop = "warn"
 explicit_into_iter_loop = "warn"
 redundant_closure_for_method_calls = "warn"
+
+[[example]]
+name = "background_color"
+doc-scrape-examples = true
+
+[[example]]
+name = "detect_color_support"
+required-features = ["termprofile"]
+doc-scrape-examples = true
+
+[[example]]
+name = "highlight_file"
+doc-scrape-examples = true

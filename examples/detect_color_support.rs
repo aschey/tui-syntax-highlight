@@ -35,7 +35,9 @@ fn main() -> Result<()> {
     });
     let highlighter = Highlighter::with_profile(theme, term_profile);
     let syntaxes = ASSETS.with(|a| a.get_syntax_set().cloned())?;
-    let syntax = syntaxes.find_syntax_by_name("Rust").unwrap();
+    let syntax = syntaxes
+        .find_syntax_by_name("Rust")
+        .expect("syntax missing");
     let highlighted_text = highlighter.highlight_reader(
         File::open("./examples/sqlite_custom/build.rs")?,
         syntax,

@@ -24,7 +24,9 @@ fn main() -> Result<()> {
     let theme = ASSETS.with(|a| a.get_theme("Nord").clone());
     let highlighter = Highlighter::new(theme);
     let syntaxes = ASSETS.with(|a| a.get_syntax_set().cloned())?;
-    let syntax = syntaxes.find_syntax_by_name("Rust").unwrap();
+    let syntax = syntaxes
+        .find_syntax_by_name("Rust")
+        .expect("syntax missing");
     let highlighted_text = highlighter.highlight_reader(
         File::open("./examples/sqlite_custom/build.rs")?,
         syntax,
