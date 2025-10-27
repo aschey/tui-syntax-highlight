@@ -1,5 +1,13 @@
 # tui-syntax-highlight
 
+[![crates.io](https://img.shields.io/crates/v/tui-syntax-highlight.svg?logo=rust)](https://crates.io/crates/tui-syntax-highlight)
+[![docs.rs](https://img.shields.io/docsrs/tui-syntax-highlight?logo=rust)](https://docs.rs/tui-syntax-highlight)
+![license](https://img.shields.io/badge/License-MIT%20or%20Apache%202-green.svg)
+[![CI](https://github.com/aschey/tui-syntax-highlight/actions/workflows/ci.yml/badge.svg)](https://github.com/aschey/tui-syntax-highlight/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/aschey/tui-syntax-highlight/graph/badge.svg?token=ytNY7qPY2x)](https://codecov.io/gh/aschey/tui-syntax-highlight)
+![GitHub repo size](https://img.shields.io/github/repo-size/aschey/tui-syntax-highlight)
+![Lines of Code](https://aschey.tech/tokei/github/aschey/tui-syntax-highlight)
+
 A library for creating code blocks in
 [`ratatui`](https://github.com/ratatui/ratatui) apps with
 [`syntect`](https://github.com/trishume/syntect).
@@ -17,9 +25,9 @@ compile.**
 - `regex-fancy` - Uses the `fancy-regex` regex engine. See
   [syntect's documentation](https://crates.io/crates/syntect) for more info.
 
-- `termprofile` - Enables integration with
-  [`termprofile`](https://crates.io/crates/termprofile) to detect the terminal's
-  color support level and automatically use compatible colors.
+- `tui-syntax-highlight` - Enables integration with
+  [`tui-syntax-highlight`](https://crates.io/crates/tui-syntax-highlight) to detect the
+  terminal's color support level and automatically use compatible colors.
 
 ## Usage
 
