@@ -77,7 +77,7 @@ impl Highlighter {
     }
 
     /// Override the background with a different color.
-    /// Set this to [Color::Reset] to disable the background color.
+    /// Set this to [`Color::Reset`] to disable the background color.
     pub fn override_background<C>(mut self, background: C) -> Self
     where
         C: Into<Color>,
@@ -306,7 +306,7 @@ impl Highlighter {
             .iter()
             .any(|r| r.contains(&line_number));
 
-        for &(ref style, mut text) in v.iter() {
+        for &(ref style, mut text) in v {
             let ends_with_newline = text.ends_with('\n');
             if ends_with_newline {
                 text = &text[..text.len() - 1];
