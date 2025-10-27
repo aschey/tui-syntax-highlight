@@ -97,3 +97,8 @@ Custom themes and syntaxes can be compiled and embedded in the binary. See the
 
 Settings such as the background color, formatting, and line number style can all
 be changed. See the available methods in `Highlighter` for details.
+
+## Supported Rust Versions
+
+The MSRV is currently 1.88.0. Since Cargo's V3 resolver supports MSRV-aware
+dependencies, we do not treat an MSRV bump as a breaking change.
