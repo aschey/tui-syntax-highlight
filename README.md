@@ -4,7 +4,7 @@ A library for creating code blocks in
 [`ratatui`](https://github.com/ratatui/ratatui) apps with
 [`syntect`](https://github.com/trishume/syntect).
 
-![screenshot](./assets/screenshot.png)
+![screenshot](https://github.com/aschey/tui-syntax-highlight/blob/main/assets/screenshot.png?raw=true)
 
 ## Feature Flags
 
@@ -91,12 +91,15 @@ special way - these special encodings are handled automatically by this crate.
 ## Custom Themes and Syntaxes
 
 Custom themes and syntaxes can be compiled and embedded in the binary. See the
-`sqlite_custom` example for usage.
+[`sqlite_custom`](https://github.com/aschey/tui-syntax-highlight/tree/main/examples/sqlite_custom)
+example for usage.
 
 ## Code Block Style
 
 Settings such as the background color, formatting, and line number style can all
-be changed. See the available methods in `Highlighter` for details.
+be changed. See the available methods in
+[`Highlighter`](https://docs.rs/tui_syntax_highlight/struct.Highlighter.html)
+for details.
 
 ## Supported Rust Versions
 
