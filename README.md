@@ -106,7 +106,7 @@ example for usage.
 
 Settings such as the background color, formatting, and line number style can all
 be changed. See the available methods in
-[`Highlighter`](https://docs.rs/tui_syntax_highlight/struct.Highlighter.html)
+[`Highlighter`](https://docs.rs/tui-syntax-highlight/latest/tui_syntax_highlight/struct.Highlighter.html)
 for details.
 
 ## Supported Rust Versions
