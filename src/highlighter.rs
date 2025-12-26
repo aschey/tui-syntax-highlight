@@ -4,8 +4,8 @@ use std::io::{self, BufRead, BufReader};
 use std::ops::Range;
 use std::sync::Arc;
 
-use ratatui::style::{Color, Style, Stylize};
-use ratatui::text::{Line, Span, Text};
+use ratatui_core::style::{Color, Style, Stylize};
+use ratatui_core::text::{Line, Span, Text};
 pub use syntect;
 use syntect::easy::HighlightLines;
 use syntect::highlighting::Theme;
@@ -26,7 +26,7 @@ impl Debug for GutterTemplate {
     }
 }
 
-/// A syntax highlighter that produces styled [`Text`](ratatui::text::Text) output.
+/// A syntax highlighter that produces styled [`Text`](ratatui_core::text::Text) output.
 /// The output style can be changed using the configuration methods provided in this struct.
 #[derive(Clone, Debug)]
 pub struct Highlighter {
@@ -360,7 +360,10 @@ impl Highlighter {
         item
     }
 
-    fn syntect_style_to_tui(&self, style: syntect::highlighting::Style) -> ratatui::style::Style {
+    fn syntect_style_to_tui(
+        &self,
+        style: syntect::highlighting::Style,
+    ) -> ratatui_core::style::Style {
         let mut tui_style = self.converter.syntect_style_to_tui(style);
 
         if let Some(bg) = self.override_background {
