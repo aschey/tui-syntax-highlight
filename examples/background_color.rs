@@ -11,7 +11,7 @@ use ratatui::crossterm::terminal::{
 };
 use ratatui::layout::Alignment;
 use ratatui::style::Stylize;
-use ratatui::widgets::{Block, BorderType, Padding, Paragraph};
+use ratatui::widgets::{Block, BorderType, Paragraph};
 use syntect_assets::assets::HighlightingAssets;
 use tui_syntax_highlight::Highlighter;
 
@@ -41,7 +41,6 @@ fn main() -> Result<()> {
     let paragraph = Paragraph::new(highlight).bg(bg).block(
         Block::bordered()
             .border_type(BorderType::Rounded)
-            .padding(Padding::uniform(0))
             .title("Syntax Highlight!")
             .title_alignment(Alignment::Center),
     );
