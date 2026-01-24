@@ -41,7 +41,6 @@ fn main() -> Result<()> {
     let paragraph = Paragraph::new(highlight).bg(bg).block(
         Block::bordered()
             .border_type(BorderType::Rounded)
-            .padding(Padding::uniform(0))
             .title("Syntax Highlight!")
             .title_alignment(Alignment::Center),
     );
