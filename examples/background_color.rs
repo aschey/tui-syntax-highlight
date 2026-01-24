@@ -11,7 +11,7 @@ use ratatui::crossterm::terminal::{
 };
 use ratatui::layout::Alignment;
 use ratatui::style::Stylize;
-use ratatui::widgets::{Block, BorderType, Padding, Paragraph};
+use ratatui::widgets::{Block, BorderType, Paragraph};
 use syntect_assets::assets::HighlightingAssets;
 use tui_syntax_highlight::Highlighter;
 
