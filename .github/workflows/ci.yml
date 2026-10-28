@@ -27,7 +27,7 @@ jobs:
           toolchain: stable
       - uses: Swatinem/rust-cache@v2
       - name: Build
-        run: cargo build 
+        run: cargo build
       - name: Clippy
         run: cargo clippy --all-features --examples -- -D warnings
       - name: Build all
@@ -114,10 +114,14 @@ jobs:
         run: cargo +nightly doc -Zunstable-options -Zrustdoc-scrape-examples --no-deps --all-features
         env:
           RUSTDOCFLAGS: --cfg docsrs -D warnings
-      
+
       - name: Lint dependencies
         uses: EmbarkStudios/cargo-deny-action@v2
-      
+        with:
+          # Excluding advisories because cargo deny has no option to only include direct dependencies
+          # and there's nothing we can do to force updates in transitive dependencies
+          command-arguments: bans licenses sources
+
       # disabling until https://github.com/rustsec/audit-check/issues/28 is fixed
       # - name: Security vulnerabilities audit
       #   uses: rustsec/audit-check@v2.0.0
